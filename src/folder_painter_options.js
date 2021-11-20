@@ -351,7 +351,17 @@ function render(cfg){
 }
 
 function draw_config_table(cfg){
-    document.getElementById(formID).innerHTML = render(cfg)
+    // document.getElementById(formID).innerHTML = render(cfg)
+    // 'innerHTML' direct modification is a security risk, so we use DOMparser:
+    let e = document.getElementById(formID)
+    const data = render(cfg)
+    const parser = new DOMParser()
+    const parsed = parser.parseFromString(data, `text/html`)
+    const tags = parsed.getElementsByTagName(`body`)
+    e.innerHTML = ``
+    for (const tag of tags) {
+        e.appendChild(tag)
+    }
 }
 
 function confirmation(question){

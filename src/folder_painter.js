@@ -23,7 +23,9 @@ function modify_webpage(iconz,colorz){
 
     let style = document.createElement('style')
     document.head.appendChild(style)
-    style.innerHTML = css1 + '\n' + css2
+    // style.innerHTML = css1 + '\n' + css2
+    // 'innerHTML' direct modification is a security risk, so we use 'textContent'
+    style.textContent = css1 + '\n' + css2
 }
 
 
