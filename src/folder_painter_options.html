@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style>
+			@font-face {
+				font-family: controlIcons;
+				src: url("https://outlook-1.cdn.office.net/owamail/20211101003.19/resources/fonts/controlIcons.woff") format("woff");
+			}
+			@font-face {
+				font-family: mailIcons;
+				src: url("https://outlook-1.cdn.office.net/owamail/20211101003.20/resources/fonts/mailIcons.woff") format("woff");
+			}
+			@font-face {
+				font-family: peopleIcons;
+				src: url("https://outlook-1.cdn.office.net/owamail/20211101003.20/resources/fonts/peopleIcons.woff") format("woff");
+			}
+			::placeholder {
+				color: red;
+				opacity: .7;
+				font-family: controlIcons, mailIcons, peopleIcons;
+				text-align: center;
+				font-size: 15px;
+			}
+			.single_button{
+				text-align: center;
+				min-width: 70px;
+				margin: 10px;
+				font-family: "Segoe UI Emoji";
+			}
+
+			.radio-button-panel{
+				background-color: #444444;
+				color: white;
+				padding: 10px;
+			}
+			.radio-button-common-div{
+				padding: 5px;
+				padding-bottom: 10px;
+				border-bottom: none !important;
+				border-radius: 6px;
+				border-bottom-left-radius: unset;
+				border-bottom-right-radius: unset;
+			}
+			.radio-button-active-div{
+				background-color: white;
+				border: 2px solid white;
+				color: red;
+			}
+			.radio-button-inactive-div{
+				background-color: darkgray;
+				border: 2px solid darkgray;
+				color: black;
+			}
+
+			.help_div{
+				background-color: white;
+				min-height: 200px;
+				padding: 10px;
+			}
+			.json_page_div {
+				margin:10px;
+				background-color: white;
+			}
+			.colors_page_div {
+			}
+			.icons_page_div{
+			}
+
+			.emoji {
+				background-color: lightgray;
+				text-align: center;
+				font-family: "Segoe UI Emoji";
+			}
+			.icon_name_input {
+				background-color: lightgray;
+			}
+
+			.separator_div {
+				min-height: 20px;
+				padding: 10px;
+			}
+
+			table {
+				background-color: white;
+				width: 100%;
+				padding: 10px;
+			}
+			th {
+				background-color: darkgray;
+				font-size: 12px;
+			}
+
+			th:nth-child(1) {
+				width:  64%;
+			}
+
+			th:nth-child(2),
+			th:nth-child(3),
+			th:nth-child(4) {
+				width:  12%;
+			}
+
+			td input {
+				width: 100%;
+			}
+
+			input[type="color"] {
+				border: 1px solid gray;
+			}
+
+			td button {
+				font-family: "Segoe UI Emoji";
+				width: 100%;
+				text-align: center;
+			}
+			textarea {
+				resize: none;
+				width: 100%;
+				min-width: 100%;
+				max-width: 100%;
+				background-color: #eaeaea;
+				border-top: 2px solid darkgray;
+				border-left: 2px solid darkgray;
+				border-right: 2px solid lightgray;
+				border-bottom: 2px solid lightgray;
+    		}
+			input[type="radio"] {
+				 display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="folder-painter-form-id">
+             <!-- config panel content comes here -->
+		</form>
+	</body>
+	<script src="common.js"></script>
+	<script src="folder_painter_options.js"></script>
+</html>
