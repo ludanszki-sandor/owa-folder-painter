@@ -590,7 +590,7 @@ function handleKeyDown(e){
 
     if (e.key === "Enter"){ // key:"Enter", keyCode:13
         if (control_type !== 'button'){
-            debugAlert(['handleKeyDown - enter disabled',e.key,e.keyCode,e.code,control_type,action,id])
+            debugLog(['handleKeyDown - enter disabled',e.key,e.keyCode,e.code,control_type,action,id])
             e.preventDefault()  // preventing submit form when pressing enter on elements
         }
     }
