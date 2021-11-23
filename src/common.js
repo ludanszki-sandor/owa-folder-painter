@@ -2,10 +2,10 @@ const DEBUG_COLLECT_ICONS = false   // homemade stuff for collecting dataIconNam
 const FORCE_RESET_CONFIG = false    // for recreating config settings
 const DEBUG_LOG_MODE_LOG = false    // debug messages to console - Warning: console log disabled on Mozilla config page!
 const DEBUG_LOG_MODE_ALERT = false  // show debug messages as alert() messages
+const DEBUG_SHOW_RAW_CONTENT = false // show panels' content as text instead of html
 const JSON_NULL_TO_TRANSPARENT = true // JSON export: replace 'transparent' colors to null
 const ENABLE_TRANSPARENT_TEXTCOLOR = false // transparent text colors enabled?
-
-
+const TOP_SEARCH_BAR = true // draw searchbar on the top of the table or to the bottom?
 
 
 const FAKE_TRANSPARENT_COLOR = '#ffffff'    // this color means transparent
@@ -18,18 +18,15 @@ const color_color_fields = {all: ['textColor','textBGColor'],
                             bg:  ['textBGColor']}
 const config_field_names = ['colors','icons','active_tab','enabled','outlook_language','default_values']
 const config_json_enabled_field_names = ['colors','icons']
+const lang_codes = {en:'en',hu:'hu'}
 
-let config = {icons: make_default_icons(),
+let config = {
+    icons: make_default_icons(),
     colors: make_default_colors(LANG_CODE),
     active_tab : 1,
     outlook_language : LANG_CODE,
     enabled : true,
-    default_values: {
-        newFolder : '',
-        textColor : 'blue',
-        textBGColor: TEXT_TRANSPARENT,
-        emoji : ''
-    }
+    default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT, iconName : '', emoji : ''}
 }
 
 function iconNameDatabase(){

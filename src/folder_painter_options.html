@@ -23,13 +23,20 @@
 				text-align: center;
 				font-size: 15px;
 			}
+			.quick_search{
+				background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAACOklEQVRIid2UT0jTYRjHB106Bd06dPDoIYJOXqKyizJNa3Ook+L5Pu/bjA6FY+lFWW2uog5BiMZEMyYF0R9T1IMdCgq6iBSlYhGBUKFYg2Jzefh22JaFh/1+pAQ98MDLe/h83uf5wuvx/LclImUAOlX1IYBFAJ8K54iIlP0NeLuInAUwBzXUti5qrJ8aH6S2dREAAbwFEGlpadnhWgAgBYB6IUkzPEc7nvmjTWqWGusvisbcws8AoLk2+gsYnsoy8WyVF5+vMjyVXRddnyxKIo7g1trdAL5qtI92NM3WiQxvTOc4trDG5EyOyZkcHy38YHImx1OTeYnGBwjgm6NMVPUcANp7H2nHM+x8mmXv9DrMjmfYOpFh73SOV1+s5u8eLBFqKCJdTtaT0khsw85LtbYnqKp3SgpE5KXGB90L4oME8MrJBK+1+6Z7QeIWAcwFAoFtpTK4q+2X3As6LhPA/ZITqOp52BDtyIpzwcgKYUNU1ZiTDMoBZN3koIkhAlgzxuwpKSjk0A6ApudxSbjpe0IAFJErjuC/rWoSADU+QDM8vxF8+13+5eYkAaQBzIvILseCYDC4U0Q6VPU9bIgajlK7h/IdjhI2RAAfRKSn+JgjDc1vgsETla4mKWQSBzAGYBnAYuG77hSRco/H4zHG7PP6Gmcrqup5sNb/xbXESVUfDcihWv9SRVU9D9c1fPb6mo5vusTra9p6SbW/ee/+mmO5iqp6Vtb505suKEoO1Pi/V/saT2+J4J/UT3PcZXXX7IklAAAAAElFTkSuQmCC);
+				background-repeat: no-repeat;
+				background-position: left;
+				background-size: 16px 16px;
+
+				padding-left: 20px;
+			}
 			.single_button{
 				text-align: center;
 				min-width: 70px;
 				margin: 10px;
 				font-family: "Segoe UI Emoji";
 			}
-
 			.radio-button-panel{
 				background-color: #444444;
 				color: white;
@@ -53,7 +60,6 @@
 				border: 2px solid darkgray;
 				color: black;
 			}
-
 			.help_div{
 				background-color: white;
 				min-height: 200px;
@@ -67,7 +73,6 @@
 			}
 			.icons_page_div{
 			}
-
 			.emoji {
 				background-color: lightgray;
 				text-align: center;
@@ -76,12 +81,18 @@
 			.icon_name_input {
 				background-color: lightgray;
 			}
-
 			.separator_div {
 				min-height: 20px;
 				padding: 10px;
 			}
-
+			.radiobuttons_place_div{
+			}
+			.configpanel_place_div{
+			}
+			.selector_row {
+				font-weight: bold;
+				font-style: italic;
+			}
 			table {
 				background-color: white;
 				width: 100%;
@@ -91,25 +102,20 @@
 				background-color: darkgray;
 				font-size: 12px;
 			}
-
 			th:nth-child(1) {
 				width:  64%;
 			}
-
 			th:nth-child(2),
 			th:nth-child(3),
 			th:nth-child(4) {
 				width:  12%;
 			}
-
 			td input {
 				width: 100%;
 			}
-
 			input[type="color"] {
 				border: 1px solid gray;
 			}
-
 			td button {
 				font-family: "Segoe UI Emoji";
 				width: 100%;
@@ -129,11 +135,32 @@
 			input[type="radio"] {
 				 display: none;
 			}
+			.save_button_inactive{
+			}
+			.save_button_active{
+			}
+			.save_button_active:before{
+				content: "*";
+				color: transparent;
+				font-weight: bold;
+			}
+			.save_button_active:after{
+				content: "*";
+				color: red;
+				font-weight: bold;
+			}
+
 		</style>
 	</head>
 	<body>
 		<form id="folder-painter-form-id">
-             <!-- config panel content comes here -->
+			<div class="radiobuttons_place_div" id="radiobuttons_place">
+				<!-- radiobutton panel content comes here -->
+			</div>
+			<div class="separator_div"></div>
+			<div class= "configpanel_place_div" id="configpanel_place">
+				<!-- config panel content comes here -->
+			</div>
 		</form>
 	</body>
 	<script src="common.js"></script>
