@@ -19,7 +19,7 @@
 			::placeholder {
 				color: red;
 				opacity: .7;
-				font-family: controlIcons, mailIcons, peopleIcons;
+				font-family: controlIcons, mailIcons, peopleIcons, "Segoe UI Emoji";
 				text-align: center;
 				font-size: 15px;
 			}
@@ -76,7 +76,7 @@
 			.emoji {
 				background-color: lightgray;
 				text-align: center;
-				font-family: "Segoe UI Emoji";
+				font-family: controlIcons, mailIcons, peopleIcons, "Segoe UI Emoji";
 			}
 			.icon_name_input {
 				background-color: lightgray;
@@ -103,11 +103,12 @@
 				font-size: 12px;
 			}
 			th:nth-child(1) {
-				width:  64%;
+				width:  auto;
 			}
 			th:nth-child(2),
 			th:nth-child(3),
-			th:nth-child(4) {
+			th:nth-child(4),
+			th:nth-child(5) {
 				width:  12%;
 			}
 			td input {
@@ -115,6 +116,9 @@
 			}
 			input[type="color"] {
 				border: 1px solid gray;
+			}
+			input[type="color"][value="#ffffff"] {
+
 			}
 			td button {
 				font-family: "Segoe UI Emoji";

@@ -14,6 +14,7 @@ const cmdChangeColorNoSave = 'change-color-no-save'
 
 const cmdRemoveIcon = 'remove-icon'
 const cmdChangeIcon = 'change-icon'
+const cmdChangeIconNoSave = 'change-icon-no-save'
 
 const emojiDelete = '❌'
 const emojiSave = '💾'
@@ -23,8 +24,9 @@ const emojiLoadFile = '✔️'
 const emojiResetConfig = '🆑'
 const emojiLoadFileRadio = emojiLoadFile
 
-
+const sandboxDivCoreID = 'folder-painter-sandbox-div-core'
 const jsonDivCoreID = 'folder-painter-json-options-div-core'
+
 const cmdLoadJSON = 'load-json'
 const loadJSONtextAreaID = 'json-textarea'
 const cmdResetConfig = 'reset-config'
@@ -39,16 +41,18 @@ const cmdRadioButton = 'radio-button'
 
 const radioButtonsData_IDs = {
     panel_colors : 'panel_colors',
-    panel_icons:'panel_icons',
-    panel_json:'panel_json',
-    panel_help:'panel_help',
-    error: 'error'
+    panel_icons : 'panel_icons',
+    panel_json : 'panel_json',
+    panel_help : 'panel_help',
+    panel_sandbox : 'panel_sandbox',
+    error : 'error'
 }
 const radioButtonsData = [
     {id:radioButtonsData_IDs.panel_colors,text:'🎨 - Customize colors',radio_span_id : 'radio-colors'},
     {id:radioButtonsData_IDs.panel_icons,text:'🍒 - Replace icons',radio_span_id : 'radio-icons'},
     {id:radioButtonsData_IDs.panel_json,text:`${emojiLoadFileRadio} - Load from JSON`,radio_span_id : 'radio-json'},
-//    {id:radioButtonsData_IDs.panel_help,text:`❓ - Help`,radio_span_id : 'radio-help'}
+//    {id:radioButtonsData_IDs.panel_help,text:`❓ - Help`,radio_span_id : 'radio-help'},
+//    {id:radioButtonsData_IDs.panel_sandbox,text:`😎 - Sandbox`,radio_span_id : 'radio-sandbox'},
 ]
 
 const contentDivIDs = {
@@ -63,12 +67,14 @@ const formID = 'folder-painter-form-id'
 
 let tooltips = {
     iconName : 'Icon name',
-    iconText : 'Icon emoji',
+    iconText : 'Icon emoji or PNG base64 data',
+    iconColor : 'Icon emoji color',
     iconSave : 'Save changes',
     iconDelete : 'Delete entry',
 
     iconNameNew : 'New icon name',
-    iconTextNew : 'New icon emoji',
+    iconTextNew : 'New icon emoji or PNG base64 data',
+    iconColorNew : 'New icon emoji color',
     iconAppendNew : 'Save new entry',
 
     folderName : 'Folder name',
@@ -129,9 +135,11 @@ function saveTabScreenElements(tab_index){
     } else if (tabID === radioButtonsData_IDs.panel_icons){
         for (let i = 0;i < config.icons.length;i++){
             config.icons[i].iconText = getScreenElementValue(iconIDprefix + i + '+1') ?? config.icons[i].iconText
+            config.icons[i].iconColor = getScreenElementValue(iconIDprefix + i + '+2') ?? config.icons[i].iconColor
         }
         config.default_values.iconName = getScreenElementValue(iconIDprefix + '-1+0') ?? config.default_values.iconName
         config.default_values.emoji = getScreenElementValue(iconIDprefix + '-1+1') ?? config.default_values.emoji
+        config.default_values.iconColor = getScreenElementValue(iconIDprefix + '-1+2') ?? config.default_values.iconName
     }
 }
 
@@ -242,6 +250,7 @@ function generate_icon_config_table_line(iconz,idx){
                     <td></td>
                     <td></td>
                     <td></td>
+                    <td></td>
                </tr>`
     }
     let i = str2int(idx)
@@ -251,25 +260,29 @@ function generate_icon_config_table_line(iconz,idx){
     if (i === -1){
         let lastIconName = config.default_values.iconName
         let lastEmoji = config.default_values.emoji
+        let lastColor = standardize_color(config.default_values.iconColor)
         let lastSaveButtonClass = "save_button_inactive" // todo...
         return `<tr id="${iconLineIDPrefix}-1" class="selector_row">
                      <td><input id="${iconIDprefix}-1+0" type="text" title="${tooltips.iconNameNew}" class="icon_name_input quick_search" placeholder="new icon name" value="${lastIconName}" data-action="${cmdChangeIcon}" data-id="-1"></td>
                      <td><input id="${iconIDprefix}-1+1" type="text" title="${tooltips.iconTextNew}" class="emoji" placeholder="emoji" value="${lastEmoji}" data-action="${cmdChangeIcon}" data-id="-1"></td>
-                     <td><button id="${iconIDprefix}-1+2" class="${lastSaveButtonClass}" title="${tooltips.iconAppendNew}" data-action="${cmdChangeIcon}" data-id="-1">${emojiAppend}</button></td>
+                     <td><input id="${iconIDprefix}-1+2" type="color" title="${tooltips.iconColorNew}" value="${lastColor}" data-action="${cmdChangeIcon}" data-id="-1" ></td>
+                     <td><button id="${iconIDprefix}-1+3" class="${lastSaveButtonClass}" title="${tooltips.iconAppendNew}" data-action="${cmdChangeIcon}" data-id="-1">${emojiAppend}</button></td>
                      <td>&nbsp;</td>
                 </tr>`
-
     } else {
         let iconName = iconz[i].iconName
         let iconText = iconz[i].iconText
+        let iconColor = standardize_color(iconz[i].iconColor)
         let iconPlaceholder = find_emoji_placeholder(iconName,'?')
         let saveButtonClass = "save_button_inactive" // todo...
+        let previewStyle = generateIconNamePreviewStyle(iconName,iconText,iconColor)
         return `<tr id="${iconLineIDPrefix}${i}">
-                   <td><input readonly="readonly" type="text" title="${tooltips.iconName}" value="${iconName}"></td>
+                   <td><input style="${previewStyle}" id="${iconIDprefix}${i}+0" readonly="readonly" type="text" title="${tooltips.iconName}" value="${iconName}"></td>
                    <td><input id="${iconIDprefix}${i}+1" type="text" title="${tooltips.iconText}" class="emoji" placeholder="${iconPlaceholder}" value="${iconText}" data-action="${cmdChangeIcon}" data-id="${i}"></td>
-                   <td><button id="${iconIDprefix}${i}+2" class="${saveButtonClass}" title="${tooltips.iconSave}" data-action="${cmdChangeIcon}" data-id="${i}" >${emojiSave}</button></td>
+                   <td><input id="${iconIDprefix}${i}+2" type="color" title="${tooltips.iconColor}" value="${iconColor}" data-action="${cmdChangeIcon}" data-id="${i}" ></td>
+                   <td><button id="${iconIDprefix}${i}+3" class="${saveButtonClass}" title="${tooltips.iconSave}" data-action="${cmdChangeIcon}" data-id="${i}" >${emojiSave}</button></td>
                    <td><button title="${tooltips.iconDelete}" data-action="${cmdRemoveIcon}" data-id="${i}">${emojiDelete}</button></td>
-              </tr>`
+                </tr>`
     }
 }
 
@@ -294,10 +307,16 @@ function generate_icon_config_table(iconz){
     return rows.join('\n')
 }
 
+function reset_config(){
+    config = generate_default_config(config.outlook_language)
+}
+
 function generate_public_config_JSON_text(cfg){
     cfg.colors = nullifyTransparentColors(cfg.colors)
+    cfg.icons = nullifyTransparentIcons(cfg.icons)
     if (JSON_NULL_TO_TRANSPARENT){
         cfg.colors = transparentifyNullColors(cfg.colors)
+        cfg.icons = transparentifyNullIcons(cfg.icons)
     }
 
     let out_cfg = {}
@@ -367,9 +386,15 @@ function loadConfigFromJSONtext(txt){
     return true
 }
 
-function generate_help_div(){
+function generate_help_div(cfg){
     return `<div class="help_div">
                 todo: help contents  
+           </div>`
+}
+
+function generate_sandbox_div(cfg){
+    return `<div class="help_div">
+                todo: SANDBOX  
            </div>`
 }
 
@@ -384,8 +409,8 @@ function render_radio(cfg){
             </div>`
 }
 
-function render_color_config_table(colors){
-    let content = generate_color_config_table(colors)
+function render_color_config_table(cfg){
+    let content = generate_color_config_table(cfg.colors)
     return `
             <div id="folder-painter-folder-options-div" class="colors_page_div">
                 <table>
@@ -404,16 +429,17 @@ function render_color_config_table(colors){
             </div>`
 }
 
-function render_icon_config_table(icons){
-    let content = generate_icon_config_table(icons)
+function render_icon_config_table(cfg){
+    let content = generate_icon_config_table(cfg.icons)
     return `
             <div id="folder-painter-icon-options-div" class="icons_page_div">
                 <table>
                     <thead>
                         <tr>
                             <th>data-icon-name</th>
-                            <th>Emoji</th>
-                            <th>Save</th>
+                            <th>Emoji/PNG</th>
+                            <th>Color</th>
+                            <th>Add/Save</th>
                             <th>Remove</th>
                         </tr>
                     </thead>
@@ -434,11 +460,21 @@ function render_json_div(cfg){
             </div>`
 }
 
-function render_help_div(){
-    let content = generate_help_div()
+function render_help_div(cfg){
+    let content = generate_help_div(cfg)
     return `
             <div id="folder-painter-help-options-div">
                 <div id="${helpDivCoreID}">
+                    ${content}
+                </div>
+            </div>`
+}
+
+function render_sandbox_div(cfg){
+    let content = generate_sandbox_div(cfg)
+    return `
+            <div id="folder-painter-sandbox-div">
+                <div id="${sandboxDivCoreID}">
                     ${content}
                 </div>
             </div>`
@@ -450,13 +486,15 @@ function render(cfg){
     let content = 'error'
     let activePanelID = radioButtonsData[cfg.active_tab].id ?? radioButtonsData_IDs.error
     if (activePanelID === radioButtonsData_IDs.panel_colors){
-        content = render_color_config_table(cfg.colors)
+        content = render_color_config_table(cfg)
     } else if (activePanelID === radioButtonsData_IDs.panel_icons){
-        content = render_icon_config_table(cfg.icons)
+        content = render_icon_config_table(cfg)
     } else if (activePanelID === radioButtonsData_IDs.panel_json){
         content = render_json_div(cfg)
-    } else if (activePanelID === radioButtonsData_IDs.panel_help){
-        content = render_help_div()
+    } else if (activePanelID === radioButtonsData_IDs.panel_help) {
+        content = render_help_div(cfg)
+    } else if (activePanelID === radioButtonsData_IDs.panel_sandbox){
+        content = render_sandbox_div(cfg)
     } else {
         // error
     }
@@ -511,6 +549,24 @@ function confirmation(question){
     return window.confirm(question)
 }
 
+function iconChanged(id){
+    let idx = str2int(id)
+    if (idx !== false) {
+        if (idx === -1) {
+            return true
+        } else if (0 <= idx && idx < config.icons.length){
+            let oldEmoji = config.icons[idx].iconText
+            let newEmoji = document.getElementById(iconIDprefix + id + '+1').value
+            let oldIconColor = standardize_color(config.icons[idx].iconColor)
+            let newIconColor = standardize_color(document.getElementById(iconIDprefix + id + '+2').value)
+            let changed = (oldEmoji !== newEmoji) || (oldIconColor !== newIconColor)
+            debugLog(['iconChanged',changed,oldEmoji,oldIconColor,'->',newEmoji,newIconColor])
+            return changed
+        }
+    }
+    return false
+}
+
 function colorChanged(id){
     let idx = str2int(id)
     if (idx !== false) {
@@ -531,20 +587,45 @@ function colorChanged(id){
     return false
 }
 
+function modify_inputIconPreviewStyle(id){
+    let idx = str2int(id)
+    //debugLog(['modify_inputIconPreviewStyle',idx])
+    if (idx === false || idx < 0) {
+        return false
+    }
+    let elem_id = `${iconIDprefix}${idx}+0`
+    let elem = document.getElementById(elem_id)
+    if (elem){
+        let iconName = getScreenElementValue(`${iconIDprefix}${idx}+0`) ?? 'unknown'
+        let emoji = getScreenElementValue(`${iconIDprefix}${idx}+1`) ?? ':-('
+        let color = getScreenElementValue(`${iconIDprefix}${idx}+2`) ?? 'cyan'
+        let newPreviewStyle = generateIconNamePreviewStyle(iconName,emoji,color)
+        elem.style = newPreviewStyle
+    }
+}
+
+function modify_inputIcon(id){
+    modify_inputIconPreviewStyle(id)
+    modify_iconSaveButtonClass(id)
+}
+
 function modify_iconSaveButtonClass(id){
     let idx = str2int(id)
     if (idx === false){
         return false
     }
-    let elem = document.getElementById(iconIDprefix + id + '+2')
+    let elem = document.getElementById(iconIDprefix + id + '+3')
     if (elem){
         if (idx === -1){
            // todo
         } else {
             let c_value = config.icons[idx].iconText
             let g_value = getScreenElementValue(iconIDprefix + idx + '+1')
-            let className =  (c_value !== g_value ? 'save_button_active' : 'save_button_inactive')
-            elem.className = className
+
+            let c_color = standardize_color(config.icons[idx].iconColor)
+            let g_color = standardize_color(getScreenElementValue(iconIDprefix + idx + '+2'))
+
+            elem.className = ((c_value !== g_value) || (g_color !== c_color) ? 'save_button_active' : 'save_button_inactive')
         }
     }
 }
@@ -652,7 +733,13 @@ function handleChange(e){
                 processButtonClick(action, id)
             }
         } else if (action === cmdChangeIcon){
-            modify_iconSaveButtonClass(id)
+            if (iconChanged(id)){
+                if (id === '-1') {
+                    action = cmdChangeIconNoSave
+                }
+            }
+            modify_inputIcon(id)
+            processButtonClick(action, id)
         } else {
             debugLog(['handleChange - "input" unhandled action',e.target.id,control_type,action,id])
         }
@@ -685,13 +772,20 @@ function processButtonClick(action,id){
     if (action === null && id === null){
         return false
     }
-
     let idx = str2int(id)
     debugLog(['processButtonClick',action,id,idx])
     if (idx === false) {
         return false
     }
-    if (action === cmdChangeColorNoSave){
+    if (action === cmdChangeIconNoSave){
+        if (id === '-1') {
+            config.default_values.iconName = document.getElementById(iconIDprefix + id + '+0').value
+            config.default_values.emoji = document.getElementById(iconIDprefix + id + '+1').value
+            config.default_values.iconColor = document.getElementById(iconIDprefix + id + '+2').value
+        } else {
+            return false
+        }
+    } else if (action === cmdChangeColorNoSave){
         if (id === '-1') {
             config.default_values.newFolder = document.getElementById(colorIDprefix + id + '+0').value
             config.default_values.textColor = document.getElementById(colorIDprefix + id + '+1').value
@@ -730,6 +824,7 @@ function processButtonClick(action,id){
                 textBGColor: document.getElementById(colorIDprefix + id + '+2').value,
             }
         }
+        //processButtonClick(cmdRadioButton,config.active_tab.toString())
     } else if (action === cmdRemoveIcon) {
         // remove icon item
         config.icons = config.icons.filter(
@@ -739,16 +834,19 @@ function processButtonClick(action,id){
         if (id === '-1') {
             let newIconName = document.getElementById(iconIDprefix + id + '+0').value
             let newIconText = document.getElementById(iconIDprefix + id + '+1').value
-            config.icons = config.icons.concat( {iconName: newIconName, iconText: newIconText} )
+            let newIconColor = document.getElementById(iconIDprefix + id + '+2').value
+            config.icons = config.icons.concat( {iconName: newIconName, iconText: newIconText,iconColor: newIconColor} )
             config.default_values.iconName = newIconName
             config.default_values.emoji = newIconText
         } else {
             // modify icon item
             config.icons[idx] = {
                 iconName: config.icons[idx].iconName,
-                iconText: document.getElementById(iconIDprefix + id + '+1').value
+                iconText: document.getElementById(iconIDprefix + id + '+1').value,
+                iconColor: document.getElementById(iconIDprefix + id + '+2').value
             }
         }
+        //processButtonClick(cmdRadioButton,config.active_tab.toString())
     } else if (action === cmdRadioButton) {
         saveTabScreenElements(config.active_tab)
         config.active_tab = idx
@@ -761,15 +859,14 @@ function processButtonClick(action,id){
         }
     } else if (action === cmdResetConfig){
         if (confirmation(questionResetConfig)){
-            config.icons = make_default_icons()
-            config.colors = make_default_colors(config.outlook_language)
+            reset_config()
         }
     } else {
         // invalid action
         debugLog(['processButtonClick - invalid action:',action,id])
         return false
     }
-    config.icons = normalizeIcons(sortIcons(compactIcons(config.icons.reverse())))
+    config.icons = nullifyTransparentIcons(normalizeIcons(sortIcons(compactIcons(config.icons.reverse()))))
     config.colors = nullifyTransparentColors(normalizeColors(sortColors(compactColors(config.colors.reverse()))))
     saveOptions(config)
     return true

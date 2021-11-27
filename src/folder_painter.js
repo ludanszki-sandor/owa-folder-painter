@@ -1,8 +1,9 @@
 
-function modify_webpage(iconz,colorz){
-    debugLog(['modify_webpage',iconz,colorz])
+function modify_webpage_OLD(iconz,colorz){
+    debugLog(['modify_webpage_OLD',iconz,colorz])
     colorz = nullifyTransparentColors(normalizeColors(compactColors(colorz)))
-    iconz = normalizeIcons(compactIcons(iconz))
+    iconz = nullifyTransparentIcons(normalizeIcons(compactIcons(iconz)))
+
 
     iconz = iconz.filter( item => {return (item.iconText !== '')} )
 
@@ -27,6 +28,56 @@ function modify_webpage(iconz,colorz){
     document.head.appendChild(style)
 }
 
+function modify_webpage(){
+    debugLog(['modify_webpage'])
+    let csss = Array()
+    if (config.enabled.icons){ // not perfect
+        let iconz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
+        let css_i = iconz.map(item =>
+            {
+                let {iconName,iconText,iconColor} = item
+                let newIconColor = iconColor ?? iconColor_DEFAULT
+                let st = generateIconStyle(iconName,iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
+                return `i[data-icon-name="${iconName}"] {${st}}`
+            }
+        ).join('\n')
+        csss = csss.concat(css_i)
+    }
+    if (config.enabled.icons_OLD){ // old, but good
+        let iconsz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
+        if (iconColor_DEBUG_DEFAULT === null || iconColor_DEBUG_DEFAULT === FAKE_TRANSPARENT_COLOR){
+            iconsz = iconsz.filter( item => {return (item.iconText !== '')} )
+        }
+        let css_b = iconsz.map(item => {
+            let {iconName,iconText,iconColor} = item
+            let newIconColor = iconColor ?? iconColor_DEFAULT
+            let st = generateIconStyleX(iconName,iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
+            return `i[data-icon-name="${iconName}"]:before {${st.before}}  i[data-icon-name="${iconName}"] {${st.element}}`
+        }).join('\n')
+        csss = csss.concat(css_b)
+    }
+    if (config.enabled.colors){
+        let colorz = nullifyTransparentColors(normalizeColors(compactColors(config.colors)))
+        let css_c = colorz.map(item => {
+            let color = item.textColor ?? TEXT_TRANSPARENT
+            if (!ENABLE_TRANSPARENT_TEXTCOLOR && color === TEXT_TRANSPARENT){
+                color = FAKE_TRANSPARENT_COLOR
+            }
+            let bg_color = item.textBGColor ?? TEXT_TRANSPARENT
+            return `div[title="${item.folderName}"] i, div[title="${item.folderName}"] span {color:${color};} ` +
+                `div[title="${item.folderName}"] {color:${color}; background-color:${bg_color};} ` +
+                `div[title="${item.folderName}"]:hover {background-color:${bg_color}!important; font-style:italic;}`
+        }).join('\n')
+        csss = csss.concat(css_c)
+    }
+    if (config.enabled.redNumbers){
+        let css_red = `div[role="treeitem"] span span span {color:red;}`    // number of unread items
+        csss = csss.concat(css_red)
+    }
+    let style = document.createElement('style')
+    style.textContent = csss.join('\n')
+    document.head.appendChild(style)
+}
 
 function onFinishWeb(){
     debugLog('onFinishWeb')
@@ -36,14 +87,14 @@ function onFinishWeb(){
         let data = iconCollector(importants)
         let len = data.length
         if (0 < len){
-            debugAlert(`nr of collected icons: ${len}\nData will be written to console`)
+            JSONAlert(`nr of collected icons: ${len}\nData will be written to console`)
             console.log(data)
         } else{
-            debugAlert('No icons found 😥')
+            JSONAlert('No icons found 😥')
         }
     }
-    if (config.enabled){
-        modify_webpage(config.icons,config.colors)
+    if (config.enabled.colors || config.enabled.icons || config.enabled.icons_OLD || config.enabled.redNumbers){
+        modify_webpage(config)
     }
 }
 

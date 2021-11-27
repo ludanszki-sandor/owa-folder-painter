@@ -11,23 +11,48 @@ const TOP_SEARCH_BAR = true // draw searchbar on the top of the table or to the 
 const FAKE_TRANSPARENT_COLOR = '#ffffff'    // this color means transparent
 const LANG_CODE = 'en'  // only used for creating default directory colors - en/hu
 const TEXT_TRANSPARENT = 'transparent'
-const icon_valid_fields = ['iconName','iconText']
+const icon_valid_fields = ['iconName','iconText','iconColor']
+const icon_color_fields = ['color']
 const color_valid_fields = ['folderName','textColor','textBGColor']
 const color_color_fields = {all: ['textColor','textBGColor'],
                             fg: ['textColor'],
                             bg:  ['textBGColor']}
-const config_field_names = ['colors','icons','active_tab','enabled','outlook_language','default_values']
-const config_json_enabled_field_names = ['colors','icons']
-const lang_codes = {en:'en',hu:'hu'}
 
-let config = {
-    icons: make_default_icons(),
-    colors: make_default_colors(LANG_CODE),
-    active_tab : 1,
-    outlook_language : LANG_CODE,
-    enabled : true,
-    default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT, iconName : '', emoji : ''}
+const config_field_names = ['colors','icons','active_tab','enabled','outlook_language','default_values']
+const config_json_enabled_field_names = ['colors','icons','outlook_language']
+//const lang_codes = {en:'en',hu:'hu'}
+const iconColor_DEFAULT = 'blue' // color of the unchanged i[data-icon-name] elements
+const iconColor_DEBUG_DEFAULT = 'green' // ?????
+const FORCE_HIDE_ORIGINAL_ICONS = true // mindenképp rejtse el az eredeti ikonokat - egyébként figyelni kell, hogy transparent-re állítsuk
+const icon_WIDTH = 16
+const ioon_RIGHT_PADDING = 8 // NULL ESETÉN CENTER (új módszernál)
+const OLD_ICON_MODE = true  // Sajnos az új módszer nem vált be
+
+const MIN_PNG_DATA_LENGTH = 32
+const ENABLE_TXT2IMAGE_INLINE = false // Az emojik-ból is képet generáljon-e (az új módszernél ha kikapcsoljuk, nem jelenik meg semmi)
+const FONTSIZE_TXT2IMAGE = 85
+const FONTS_EMOJI = 'Segoe UI Emoji'
+const FONTS_TXT2IMAGE = `controlIcons, mailIcons, peopleIcons, ${FONTS_EMOJI}`
+const USE_BOLD_FONT = false
+const USE_ITALIC_FONT = false
+const CTX_WIDTH = 128
+const ERROR_IMAGE = text2image('error','red',16)
+const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
+const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
+
+let config = generate_default_config(LANG_CODE)
+
+function generate_default_config(language_code){
+    return {
+        icons: make_default_icons(),
+        colors: make_default_colors(language_code),
+        active_tab : 1,
+        outlook_language : language_code,
+        enabled : {colors:true, icons: !OLD_ICON_MODE, icons_OLD: OLD_ICON_MODE, redNumbers : true},
+        default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT, iconName : '', emoji : '', iconColor: iconColor_DEFAULT}
+    }
 }
+
 
 function iconNameDatabase(){
   return  {
@@ -55,7 +80,7 @@ function iconNameDatabase(){
       ClosePane: '\ue89f',
       CollapseContent: '',
       CommentUrgent: '\uf307',
-      ComposeRegular: '\u2611',// svg:pencil in a square
+      ComposeRegular: '[/]',// svg:pencil in a square
       Contact: '\ue77b',
       ContactList: '\uf7e5',
       Copy: '\ue8c8',
@@ -137,7 +162,12 @@ function debugLog(v){
     }
 }
 
-function debugAlert(v){
+function debugAlert(v){ // USE ONLY IN DEVELOPMENT!
+    let txt = JSON.stringify(v)
+    alert(txt)
+}
+
+function JSONAlert(v){
     let txt = JSON.stringify(v)
     alert(txt)
 }
@@ -158,9 +188,10 @@ function make_default_icons(){
     let db = iconNameDatabase()
     return Object.keys(db).map(key =>
         {
-            return {iconName:key, iconText: (emojis.hasOwnProperty(key) ? emojis[key] : '')    }
+            return {iconName:key, iconText: (emojis.hasOwnProperty(key) ? emojis[key] : (COPY_PLACEHOLDERS ? find_emoji_placeholder(key,'') : '') ), iconColor : iconColor_DEFAULT  }
         } )
 }
+
 
 function find_emoji_placeholder(dataIconName,defaultResult){
     let db = iconNameDatabase()
@@ -182,7 +213,8 @@ function make_default_colors(lang){
             ['Junk Email', 'brown'],
             ['Archive', 'blue'],
             ['Notes', 'blue'],
-            ['Conversation History', '#5e5eac']
+            ['Conversation History', '#5e5eac'],
+            ['Favorites', 'green']
         ],
         hu : [
             ['Beérkezett üzenetek', '#004753'],
@@ -192,13 +224,14 @@ function make_default_colors(lang){
             ['Levélszemét', 'brown'],
             ['Archívum', 'blue'],
             ['Feljegyzések', 'blue'],
-            ['Beszélgetési előzmények', '#5e5eac']
+            ['Beszélgetési előzmények', '#5e5eac'],
+            ['Kedvencek', 'green']
         ]
     }
     let lang_code
     if (!default_colors.hasOwnProperty(lang)){
         lang_code = Object.keys(default_colors)[0]
-        debugLog(['lang mofified:',lang,lang_code])
+        debugLog(['lang modified:',lang,lang_code])
     } else {
         lang_code = lang
     }
@@ -310,15 +343,10 @@ function nullifyTransparentColors(colors){
         return replaceArrayValues(temp2,TEXT_TRANSPARENT,FAKE_TRANSPARENT_COLOR,color_color_fields.fg)
 
     }
+}
 
-
-/*    let color_field_names
-    if (ENABLE_TRANSPARENT_TEXTCOLOR){
-        color_field_names = color_color_fields.all
-    } else {
-        color_field_names = color_color_fields.bg
-    }
-    return replaceArrayValues(colors,FAKE_TRANSPARENT_COLOR,null,color_field_names) */
+function nullifyTransparentIcons(icons){
+    return replaceArrayValues(icons,FAKE_TRANSPARENT_COLOR,null,icon_color_fields)
 }
 
 function transparentifyNullColors(colors){
@@ -330,13 +358,17 @@ function transparentifyNullColors(colors){
     }
 }
 
+function transparentifyNullIcons(icons){
+    return replaceArrayValues(icons,null,TEXT_TRANSPARENT,icon_color_fields)
+}
+
+
 function normalizeColors(colors){
     return  normalizeArray(colors,color_valid_fields)
 }
 
 function normalizeIcons(icons){
-    let temp = normalizeArray(icons,icon_valid_fields)
-    return replaceArrayValues(temp,null,'',icon_valid_fields)
+    return normalizeArray(icons,icon_valid_fields)
 }
 
 function compactColors(colors){
@@ -401,4 +433,159 @@ function iconCollector(importants){
     //return found
 }
 
+function sanitize_base64(data){
+    if (DEBUG_DISABLE_sanitize_base64){
+        return data
+    }
+    try {
+        let raw = atob(data)
+    } catch(e) {
+        return false
+    }
+    return data
+}
 
+function generateIconStyleX(iconName,pngBase64,color,enableText2image){
+    let img_width = icon_WIDTH
+    let i_color = color ?? iconColor_DEBUG_DEFAULT
+    let draw_color = color ?? iconColor_DEFAULT
+    let bg_img_code = null
+    let st0
+    let code = pngBase64 ?? ''
+
+    if (code === ''){
+        st0 = ''
+    } else if (code.length < MIN_PNG_DATA_LENGTH){
+        if (enableText2image){
+            let draw_color = color ?? iconColor_DEFAULT
+            let xcode = text2image(pngBase64,draw_color,img_width)
+            bg_img_code = `url(${xcode})`
+        } else {
+            let foFa
+            if (FONTS_TXT2IMAGE){
+                foFa = FONTS_TXT2IMAGE
+            } else {
+                foFa = FONTS_EMOJI
+            }
+            st0 = `color:${draw_color}; font-family:${foFa}; content:"${pngBase64}";`
+        }
+    } else {
+        pngBase64 = sanitize_base64(pngBase64)
+        if (pngBase64 === false){
+            bg_img_code = `url(${ERROR_IMAGE})`
+        } else {
+            bg_img_code = `url(data:image/png;base64,${pngBase64})`
+        }
+    }
+    if (bg_img_code !== null){
+        i_color = iconColor_DEBUG_DEFAULT
+        st0 = `content: ${bg_img_code};`
+    }
+    i_color = i_color ?? TEXT_TRANSPARENT
+    if (i_color === FAKE_TRANSPARENT_COLOR){
+        i_color = TEXT_TRANSPARENT
+    }
+    if (st0 !== '' && FORCE_HIDE_ORIGINAL_ICONS){
+        i_color = TEXT_TRANSPARENT
+    }
+    let st1 = `color:${i_color} !important;`
+    if (st0 !== ''){
+        st1 += `margin-right:-12px;`
+    }
+    return {before: st0, element: st1}
+}
+
+function generateIconStyle(iconName,pngBase64,color,enableText2image){
+    let img_width = icon_WIDTH
+    let min_width = img_width
+    let i_color = color ?? iconColor_DEBUG_DEFAULT
+    let bg_img_code = null
+    let code = pngBase64 ?? ''
+    if (0 < code.length) {
+        if (code.length < MIN_PNG_DATA_LENGTH){
+            if (enableText2image){
+                let draw_color = color ?? iconColor_DEFAULT
+                let xcode = text2image(pngBase64,draw_color,img_width)
+                bg_img_code = `url(${xcode})`
+            }
+        } else {
+            pngBase64 = sanitize_base64(pngBase64)
+            if (pngBase64 === false){
+                bg_img_code = `url(${ERROR_IMAGE})`
+            } else {
+                bg_img_code = `url(data:image/png;base64,${pngBase64})`
+            }
+        }
+    }
+    let attributes = Array()
+    if (bg_img_code !== null){
+        i_color = iconColor_DEBUG_DEFAULT
+    }
+    i_color = i_color ?? TEXT_TRANSPARENT
+    attributes = attributes.concat(`color:${i_color} !important;`)
+    if (bg_img_code !== null){
+        let xval
+        if (ioon_RIGHT_PADDING === null){
+            xval = 'center'
+        } else{
+            xval = `right ${ioon_RIGHT_PADDING}px`
+            min_width += ioon_RIGHT_PADDING
+        }
+        attributes = attributes.concat(
+            [`background-image: ${bg_img_code};`,
+            `min-width:${min_width}px !important;`,
+            `min-height:${img_width}px !important;`,
+            'background-repeat: no-repeat;',
+            `background-position-x: ${xval} !important;`,
+            'background-position-y: center;',
+            'background-size: auto;'
+             //`background-size: ${img_width}px ${img_width}px;`
+            ])
+    }
+    return attributes.join('\n')
+}
+
+function generateIconNamePreviewStyle(iconName,txt_or_pngBase64,color){
+    color = color ?? iconColor_DEFAULT ?? iconColor_PREVIEW_DEFAULT
+    let clr = standardize_color(color)
+    let size = 16
+    let delta = 5
+    let pad = size + 2 * delta
+    let img
+    if (txt_or_pngBase64 === null || txt_or_pngBase64 === ''){
+        img = text2image(find_emoji_placeholder(iconName),clr,size)
+    } else {
+        if (txt_or_pngBase64.length < MIN_PNG_DATA_LENGTH){
+            img = text2image(txt_or_pngBase64,clr,size)
+        } else {
+            txt_or_pngBase64 = sanitize_base64(txt_or_pngBase64)
+            if (txt_or_pngBase64 === false){
+                img = ERROR_IMAGE
+            } else {
+                img = `data:image/png;base64,${txt_or_pngBase64}`
+            }
+        }
+    }
+    let bgposx = `right ${delta}px`
+    return `background-image: url(${img});
+            background-repeat: no-repeat;
+            background-position-x: ${bgposx};
+            background-position-y: center;
+            background-size: ${size}px ${size}px;
+            padding-right: ${pad}px;`
+}
+
+
+function text2image(txt,color,size){
+    let canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    let ctx = canvas.getContext('2d')
+    ctx.font =  (USE_BOLD_FONT ? 'bold ' : '') +  (USE_ITALIC_FONT ? 'italic ' : '') + `${FONTSIZE_TXT2IMAGE}px ${FONTS_TXT2IMAGE}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = color ?? iconColor_DEFAULT
+    ctx.scale(size/CTX_WIDTH,size/CTX_WIDTH)
+    ctx.fillText(txt ?? '??',CTX_WIDTH/2,CTX_WIDTH/2,CTX_WIDTH)
+    return canvas.toDataURL()
+}
