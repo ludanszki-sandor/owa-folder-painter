@@ -143,7 +143,7 @@ function onFinishWeb(){
     debugLog('onFinishWeb')
     if (DEBUG_COLLECT_ICONS){
         // todo... (not perfect yet)
-        let importants = ['AddIn','CollapseContent' /*,'ComposeRegular','StarFilled'*/]
+        let importants = [/*  ide írjuk a mindenképp megjelenítendó data-icon-name értékeket*/]
         let data = iconCollector(importants)
         let len = data.length
         if (0 < len){

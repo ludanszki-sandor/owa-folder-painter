@@ -28,19 +28,22 @@ const icon_WIDTH = 16
 const ioon_RIGHT_PADDING = 8 // NULL ESETÉN CENTER (új módszernál)
 const OLD_ICON_MODE = true  // Sajnos az új módszer nem vált be
 
+const JSONmergeWithDefaultIconNames = true
+const iconColor_JSONmerge_DEFAULT = 'purple' // hogy lássuk a különbséget
+
 const sz_FABRIC_FOLDER = 'FabricFolder'
 const MIN_PNG_DATA_LENGTH = 32
 const ENABLE_TXT2IMAGE_INLINE = false // Az emojik-ból is képet generáljon-e (az új módszernél ha kikapcsoljuk, nem jelenik meg semmi)
 const FONTSIZE_TXT2IMAGE = 85
 const FONTS_EMOJI = 'Segoe UI Emoji'
-const FONTS_TXT2IMAGE = `controlIcons, mailIcons, peopleIcons, ${FONTS_EMOJI}`
+const FONTS_TXT2IMAGE = `controlIcons, mailIcons, peopleIcons, addinsIcons, surfaceActionIcons, ${FONTS_EMOJI}`
 const USE_BOLD_FONT = false
 const USE_ITALIC_FONT = false
 const CTX_WIDTH = 128
 const ERROR_IMAGE = text2image('error','red',16)
 const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
 const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
-const CONFIG_VERSION = '0.8.4'
+const CONFIG_VERSION = '0.8.5-pre-001'
 let config = generate_default_config(LANG_CODE) // ez az egyetlen globális változó, amely módosítható!
 const commonFoldersDatabase = generateCommonFoldersDatabase()
 
@@ -69,13 +72,17 @@ function generate_default_config(languageCode){
 
 function iconNameDatabase(){
   return  {
+      AccessibiltyChecker: '\uf835',
       Add: '\ue710',
       AddEvent: '\ueeb5',
       AddFavorite: '\uf0c8',
       AddFriend: '\ue8fa',
-      AddIn: '\uf775',  // no preview (invalid char?)
+      AddIn: '\uf775',
       Archive: '\uf03f',
+      ArrangeByFrom: '\uf678',
+      Assign: '\ue9d3',
       Attach: '\ue723',
+      BlockContact: '\ue8f8',
       Blocked: '\ue733',
       BoxLogo: '\ued75',
       Broom: '\uea99',
@@ -83,6 +90,8 @@ function iconNameDatabase(){
       Camera: '\ue722',
       Cancel: '\ue711',
       Chat: '\ue901',
+      ChatInviteFriend: '\uecfe',
+      CheckMark: '\ue73e',
       ChevronDown: '\ue70d',
       ChevronDownMed: '\ue972',
       ChevronRight: '\ue76c',
@@ -90,19 +99,24 @@ function iconNameDatabase(){
       CircleFill: '\uea3b',
       CircleRing: '\uea3a',
       Clock: '\ue917',
+      Cloud: '\ue753',
       ClosePane: '\ue89f',
-      CollapseContent: '',
+      CollapseContent: '\uf165',
       CommentUrgent: '\uf307',
       ComposeRegular: '[/]',// svg:pencil in a square
       Contact: '\ue77b',
       ContactList: '\uf7e5',
       Copy: '\ue8c8',
+      CreateMailRule: '\uf67a',
       Delete: '\ue74d',
+      DoubleChevronDown: '\uee04',
       Down: '\ue74b',
+      Download: '\ue896',
       DropboxLogo: '\ued77',
       Edit: '\ue70f',
       EgnyteLogo: '\uf373',
       EmojiTabSymbols: '\ued58',
+      Encryption: '\uf69d',
       EndPointSolid: '\ueb4b',
       ExploreContent: '\ueccd',
       FabricFolder: '\uf0a9',
@@ -118,35 +132,47 @@ function iconNameDatabase(){
       Important: '\ue8c9',
       Inbox: '\uf41c',
       Info: '\ue946',
+      InsertSignatureLine: '\uf677',
       Like: '\ue8e1',
       LikeSolid: '\uf3bf',
       LinkedInLogo: '\uf20a',
       List: '\uea37',
+      LocaleLanguage: '\uf2b7',
       Mail: '\ue715',
+      MailAlert: '\ued80',
+      MailOptions: '\uf82c',
+      MarkAsProtected: '\uf6ae',
       MicrosoftTranslatorLogo: '\uf782',
       MiniExpandMirrored: '\uea5a',
       More: '\ue712',
       MoreVertical: '\uf2bc',
       NotePinned: '\ued9a',
       OfficeChat: '\uf70f',
+      OpenSource: '\uebc2',
+      OpenInNewWindow: '\ue8a7',
       Page: '\ue7c3',
       People: '\ue716',
+      Phishing: '\uf679',
       Phone: '\ue717',
       Photo2: '\ueb9f',
       Pin: '\ue718',
+      Pinned: '\ue840',
       PinnedSolid: '\uf676',
+      PlainText: '\uf834',
       Play: '\ue768',
       PlayerSettings: '\uef58',
       POI: '\uecaf',
       Print: '\ue749',
       QuickNote: '\ue70b',
       Read: '\ue8c3',
+      ReadOutLoud: '\uf112',
       RecruitmentManagement: '\uee12',
       ReminderGroup: '\uebf8',
       RemoveFromTrash: '\uf82b',
       Reply: '\ue97a',
       ReplyAll: '\uee0a',
       RevToggleKey: '\ue845',
+      Save: '\ue74e',
       Search: '\ue721',
       Send: '\ue724',
       Settings: '\ue713',
@@ -474,6 +500,7 @@ function iconCollector(importants){
     let new_item
     let defaulthintvalue = '???'
     let important
+    let style
 
     for(let i = 0; i < inputs.length; i++) {
         iconName = inputs[i].dataset.iconName
@@ -484,6 +511,11 @@ function iconCollector(importants){
             if (important || existing_hint === defaulthintvalue || existing_hint === ''){
                 new_item = {iconName:iconName, iconText:hint, important: important}
                 found = found.concat(new_item)
+
+                style = inputs[i].style
+                style.color = 'red'
+                style.backgroundColor = 'yellow'
+                style.border = '3px dotted red'
             }
         }
     }

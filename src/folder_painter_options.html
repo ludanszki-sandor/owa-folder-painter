@@ -16,10 +16,18 @@
 				font-family: peopleIcons;
 				src: url("https://outlook-1.cdn.office.net/owamail/20211101003.20/resources/fonts/peopleIcons.woff") format("woff");
 			}
+			@font-face {
+				font-family: addinsIcons;
+				src: url("https://outlook-1.cdn.office.net/owamail/20211115002.08/resources/fonts/addinsIcons.woff") format("woff");
+			}
+			@font-face {
+				font-family: surfaceActionIcons;
+				src: url("https://outlook-1.cdn.office.net/owamail/20211115002.10/resources/fonts/surfaceActionIcons.woff") format("woff");
+			}
 			::placeholder {
 				color: red;
 				opacity: .7;
-				font-family: controlIcons, mailIcons, peopleIcons, "Segoe UI Emoji";
+				font-family: controlIcons, mailIcons, peopleIcons, addinsIcons, surfaceActionIcons, "Segoe UI Emoji";
 				text-align: center;
 				font-size: 15px;
 			}
@@ -76,7 +84,7 @@
 			.emoji {
 				background-color: lightgray;
 				text-align: center;
-				font-family: controlIcons, mailIcons, peopleIcons, "Segoe UI Emoji";
+				font-family: controlIcons, mailIcons, peopleIcons, addinsIcons, surfaceActionIcons, "Segoe UI Emoji";
 			}
 			.icon_name_input {
 				background-color: lightgray;

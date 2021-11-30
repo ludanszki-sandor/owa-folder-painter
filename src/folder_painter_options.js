@@ -98,7 +98,7 @@ let tooltips = {
 }
 
 
-function restoreOptions(e){
+function restoreOptions(){
     browser.storage.local.get(config_field_names).then(onLoadConfigOK,onLoadConfigError).then(onFinishConfig)
 }
 
@@ -408,16 +408,29 @@ function loadConfigFromJSONtext(txt){
             config[field_name] = cfg[field_name]
         }
     }
+    if (JSONmergeWithDefaultIconNames){
+        let db = iconNameDatabase()
+        let history = {}
+        let fieldName
+        for (let i = 0;i<config.icons.length;i++){
+            fieldName = config.icons[i]?.iconName ?? null
+            if (!history.hasOwnProperty(fieldName)){
+                history[fieldName] = true
+            }
+        }
+        let newIcons = Object.keys(db).filter(item => !history.hasOwnProperty(item) ).map(item => ({iconName:item, iconText:'',iconColor:iconColor_JSONmerge_DEFAULT})  )
+        config.icons = sortIcons(config.icons.concat(newIcons))
+    }
     return true
 }
 
-function generate_help_div(cfg){
+function generate_help_div(){
     return `<div class="help_div">
                 todo: help contents  
            </div>`
 }
 
-function generate_sandbox_div(cfg){
+function generate_sandbox_div(){
     return `<div class="help_div">
                 todo: SANDBOX  
            </div>`
@@ -486,8 +499,8 @@ function render_json_div(cfg){
             </div>`
 }
 
-function render_help_div(cfg){
-    let content = generate_help_div(cfg)
+function render_help_div(){
+    let content = generate_help_div()
     return `
             <div id="folder-painter-help-options-div">
                 <div id="${helpDivCoreID}">
@@ -496,8 +509,8 @@ function render_help_div(cfg){
             </div>`
 }
 
-function render_sandbox_div(cfg){
-    let content = generate_sandbox_div(cfg)
+function render_sandbox_div(){
+    let content = generate_sandbox_div()
     return `
             <div id="folder-painter-sandbox-div">
                 <div id="${sandboxDivCoreID}">
@@ -518,9 +531,9 @@ function render(cfg){
     } else if (activePanelID === radioButtonsData_IDs.panel_json){
         content = render_json_div(cfg)
     } else if (activePanelID === radioButtonsData_IDs.panel_help) {
-        content = render_help_div(cfg)
+        content = render_help_div()
     } else if (activePanelID === radioButtonsData_IDs.panel_sandbox){
-        content = render_sandbox_div(cfg)
+        content = render_sandbox_div()
     } else {
         // error
     }
@@ -680,6 +693,8 @@ function handleKeyDown(e){
                 let idx = str2int(id)
                 if ((idx !== false) && (0 <= idx)){ // a -1-hez van külön mentés gomb!
                     processButtonClick(action,id)
+                    let e = document.getElementById(formID)
+                    e.submit()
                     return
                 }
             }
