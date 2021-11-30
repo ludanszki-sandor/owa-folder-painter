@@ -31,7 +31,7 @@ function modify_webpage_OLD(iconz,colorz){
 function modify_webpage(){
     debugLog(['modify_webpage'])
     let csss = Array()
-    if (config.enabled.icons){ // not perfect
+    if (config.enabled.icons){ // not perfect - don't use
         let iconz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
         let css_i = iconz.map(item =>
             {
@@ -56,28 +56,88 @@ function modify_webpage(){
         }).join('\n')
         csss = csss.concat(css_b)
     }
-    if (config.enabled.colors){
+    if (config.enabled.folderColors || config.enabled.folderIcons){
         let colorz = nullifyTransparentColors(normalizeColors(compactColors(config.colors)))
+
         let css_c = colorz.map(item => {
+            let folderName = item.folderName
             let color = item.textColor ?? TEXT_TRANSPARENT
             if (!ENABLE_TRANSPARENT_TEXTCOLOR && color === TEXT_TRANSPARENT){
                 color = FAKE_TRANSPARENT_COLOR
             }
             let bg_color = item.textBGColor ?? TEXT_TRANSPARENT
-            return `div[title="${item.folderName}"] i, div[title="${item.folderName}"] span {color:${color};} ` +
-                `div[title="${item.folderName}"] {color:${color}; background-color:${bg_color};} ` +
-                `div[title="${item.folderName}"]:hover {background-color:${bg_color}!important; font-style:italic;}`
+            let result = Array()
+            if (config.enabled.folderColors){
+                let folderColoredStyle = `div[title="${item.folderName}"] i, div[title="${item.folderName}"] span {color:${color};} ` +
+                    `div[title="${item.folderName}"] {color:${color}; background-color:${bg_color};} ` +
+                    `div[title="${item.folderName}"]:hover {background-color:${bg_color}!important; font-style:italic;}`
+                result = result.concat(folderColoredStyle)
+            }
+            if (config.enabled.folderIcons){
+                // A spec. könyvtárakat kihagyjuk! - azoknál más a data-icon-name, azaz saját ikon rendelhető hozzájuk
+                // vagy nincs hozzájuk külön data-icon-name
+                if (item.folderEmoji !== null && item.folderEmoji !== '') {
+                    let stx = generateIconStyleX('nuku',item.folderEmoji,color,ENABLE_TXT2IMAGE_INLINE)
+                    let iconEmojiStyle = ` div[role="treeitem"][title="${folderName}"] div i[data-icon-name="FabricFolder"]:before { ${stx.before} }`
+                    result = result.concat(iconEmojiStyle)
+                }
+            }
+            return  result.join(' ')
         }).join('\n')
         csss = csss.concat(css_c)
     }
-    if (config.enabled.redNumbers){
-        let css_red = `div[role="treeitem"] span span span {color:red;}`    // number of unread items
+    if (config.enabled.redNumbers){    // number of unread items
+
+        let red = config?.misc?.redNumbers ?? null
+
+        let color = standardize_color(red?.color ?? 'red')
+        let BGColor = standardize_color(red?.BGColor ?? null)
+        if (BGColor === FAKE_TRANSPARENT_COLOR){
+            BGColor = TEXT_TRANSPARENT
+        }
+        let borderColor = standardize_color(red?.borderColor ?? null)
+        if (borderColor === FAKE_TRANSPARENT_COLOR){
+            borderColor = TEXT_TRANSPARENT
+        }
+        let borderRadiusPX = str2int(red?.borderRadiusPX)
+        if (borderRadiusPX === false){
+            borderRadiusPX = 3
+        }
+        let items = [
+            `color:${color}`,
+            `padding-left: 5px`,
+            `padding-right: 5px`,
+            `padding-top: 1px`,
+            `padding-bottom: 1px`,
+        ]
+        if (BGColor !== TEXT_TRANSPARENT){
+            items = items.concat(`background-color:${BGColor}`)
+        }
+        if (borderColor !== TEXT_TRANSPARENT){
+            items = items.concat(`border: 2px solid ${borderColor}`)
+            if (0 < borderRadiusPX){
+                items = items.concat(`border-radius: ${borderRadiusPX}px`)
+            }
+        }
+        let redStyle = items.join(';')
+        let css_red = `div[role="treeitem"] span span span { ${redStyle} }`
         csss = csss.concat(css_red)
     }
+    if (1 === 1){
+        // div[role="heading"] span[value="FONTOS"]
+        //let alma = `div[role="heading"] span[class="_3TFJ6hWkkSKUtXUmmBYdBd _2yY8aBdtjO4JcToI6x-A-r"] { color: yellow; text-background:blue;}`
+        let alma = `span[value="FONTOS"] { color: yellow; text-background:blue;}`
+        csss = csss.concat(alma)
+
+    }
+
+
     let style = document.createElement('style')
     style.textContent = csss.join('\n')
     document.head.appendChild(style)
 }
+
+
 
 function onFinishWeb(){
     debugLog('onFinishWeb')
@@ -93,7 +153,8 @@ function onFinishWeb(){
             JSONAlert('No icons found 😥')
         }
     }
-    if (config.enabled.colors || config.enabled.icons || config.enabled.icons_OLD || config.enabled.redNumbers){
+    //if (config.enabled.folderColors || config.enabled.folderIcons ||config.enabled.icons || config.enabled.icons_OLD || config.enabled.redNumbers){
+    if (anythingTrue(config.enabled)){
         modify_webpage(config)
     }
 }

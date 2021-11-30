@@ -13,14 +13,14 @@ const LANG_CODE = 'en'  // only used for creating default directory colors - en/
 const TEXT_TRANSPARENT = 'transparent'
 const icon_valid_fields = ['iconName','iconText','iconColor']
 const icon_color_fields = ['color']
-const color_valid_fields = ['folderName','textColor','textBGColor']
+const color_valid_fields = ['folderName','textColor','textBGColor','folderEmoji']
 const color_color_fields = {all: ['textColor','textBGColor'],
                             fg: ['textColor'],
                             bg:  ['textBGColor']}
 
-const config_field_names = ['colors','icons','active_tab','enabled','outlook_language','default_values']
-const config_json_enabled_field_names = ['colors','icons','outlook_language']
-//const lang_codes = {en:'en',hu:'hu'}
+const config_field_names = ['icons','colors','active_tab','enabled','default_values','misc','config_version']
+const config_json_enabled_field_names = ['colors','icons','misc']
+const lang_codes = ['en','hu']
 const iconColor_DEFAULT = 'blue' // color of the unchanged i[data-icon-name] elements
 const iconColor_DEBUG_DEFAULT = 'green' // ?????
 const FORCE_HIDE_ORIGINAL_ICONS = true // mindenképp rejtse el az eredeti ikonokat - egyébként figyelni kell, hogy transparent-re állítsuk
@@ -28,6 +28,7 @@ const icon_WIDTH = 16
 const ioon_RIGHT_PADDING = 8 // NULL ESETÉN CENTER (új módszernál)
 const OLD_ICON_MODE = true  // Sajnos az új módszer nem vált be
 
+const sz_FABRIC_FOLDER = 'FabricFolder'
 const MIN_PNG_DATA_LENGTH = 32
 const ENABLE_TXT2IMAGE_INLINE = false // Az emojik-ból is képet generáljon-e (az új módszernél ha kikapcsoljuk, nem jelenik meg semmi)
 const FONTSIZE_TXT2IMAGE = 85
@@ -39,17 +40,29 @@ const CTX_WIDTH = 128
 const ERROR_IMAGE = text2image('error','red',16)
 const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
 const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
+const CONFIG_VERSION = '0.8.4'
+let config = generate_default_config(LANG_CODE) // ez az egyetlen globális változó, amely módosítható!
+const commonFoldersDatabase = generateCommonFoldersDatabase()
 
-let config = generate_default_config(LANG_CODE)
-
-function generate_default_config(language_code){
+function generate_default_config(languageCode){
+    languageCode = languageCode.toLowerCase()
     return {
         icons: make_default_icons(),
-        colors: make_default_colors(language_code),
+        colors: make_default_colors(languageCode),
         active_tab : 1,
-        outlook_language : language_code,
-        enabled : {colors:true, icons: !OLD_ICON_MODE, icons_OLD: OLD_ICON_MODE, redNumbers : true},
-        default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT, iconName : '', emoji : '', iconColor: iconColor_DEFAULT}
+        enabled : {folderColors:true,folderIcons : true, icons: !OLD_ICON_MODE, icons_OLD: OLD_ICON_MODE, redNumbers : true},
+        default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT,folderEmoji:'',
+                          iconName : '', emoji : '', iconColor: iconColor_DEFAULT},
+        misc : {
+            outlookLanguage : languageCode,
+            redNumbers :
+                {color : 'red',
+                BGColor : '#fffffe', // ez a mező lehet 'transparent' is - sajnos 'white' (#ffffff) esetén is átlátszó lesz :-)
+                borderColor :  'red', // ez is lehet 'transparent'
+                borderRadiusPX : 7}
+        },
+        config_version : CONFIG_VERSION
+
     }
 }
 
@@ -202,10 +215,41 @@ function find_emoji_placeholder(dataIconName,defaultResult){
     }
 }
 
+function generateCommonFoldersDatabase(){
+    return [
+        {dataIconName: 'Inbox', folderName: {en: 'Inbox', hu: 'Beérkezett üzenetek'}},
+        {dataIconName: 'Edit', folderName: {en: 'Drafts', hu: 'Piszkozatok'}},
+        {dataIconName: 'Send', folderName: {en: 'Sent Items', hu: 'Elküldött elemek'}},
+        {dataIconName: 'Delete', folderName: {en: 'Deleted Items', hu: 'Törölt elemek'}},
+        {dataIconName: 'Blocked', folderName: {en: 'Junk Email', hu: 'Levélszemét'}},
+        {dataIconName: 'Archive', folderName: {en: 'Archive', hu: 'Archívum'}},
+        {dataIconName: 'QuickNote', folderName: {en: 'Notes', hu: 'Feljegyzések'}},
+
+        {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'Conversation History', hu: 'Beszélgetési előzmények'}},
+
+        {dataIconName: 'ChevronRightMed', folderName: {en: 'Favorites', hu: 'Kedvencek'}},
+        {dataIconName: 'ChevronRightMed', folderName: {en: 'Folders', hu: 'Mappák'}},
+        {dataIconName: 'ChevronRightMed', folderName: {en: 'Groups', hu: 'Csoportok'}}
+    ]
+}
+
+function translateFolderName(folderName,fromLang,toLang){
+    if (fromLang === toLang){
+        return folderName
+    }
+    for (let i = 0; i < commonFoldersDatabase.length;i++){
+        if (commonFoldersDatabase[i].folderName.hasOwnProperty(fromLang) &&
+            commonFoldersDatabase[i].folderName.hasOwnProperty(toLang) &&
+            commonFoldersDatabase[i].folderName[fromLang] === folderName){
+            return commonFoldersDatabase[i].folderName[toLang]
+        }
+    }
+    return folderName
+}
 
 function make_default_colors(lang){
-    const default_colors = {
-        en : [
+    const default_colors =
+         [
             ['Inbox', '#004753'],
             ['Drafts', '#004753'],
             ['Sent Items', '#004753'],
@@ -214,28 +258,19 @@ function make_default_colors(lang){
             ['Archive', 'blue'],
             ['Notes', 'blue'],
             ['Conversation History', '#5e5eac'],
-            ['Favorites', 'green']
-        ],
-        hu : [
-            ['Beérkezett üzenetek', '#004753'],
-            ['Piszkozatok', '#004753'],
-            ['Elküldött elemek', '#004753'],
-            ['Törölt elemek', 'teal'],
-            ['Levélszemét', 'brown'],
-            ['Archívum', 'blue'],
-            ['Feljegyzések', 'blue'],
-            ['Beszélgetési előzmények', '#5e5eac'],
-            ['Kedvencek', 'green']
+            ['Favorites', 'green'],
+            ['Folders','blue'],
+            ['Groups','red']
         ]
-    }
+    lang = lang.toLowerCase()
     let lang_code
-    if (!default_colors.hasOwnProperty(lang)){
-        lang_code = Object.keys(default_colors)[0]
+    if (!lang_codes.includes(lang)){
+        lang_code = lang_codes[0]
         debugLog(['lang modified:',lang,lang_code])
     } else {
         lang_code = lang
     }
-    return default_colors[lang_code].map(item => ({folderName:item[0], textColor:item[1], textBGColor: TEXT_TRANSPARENT}) )
+    return default_colors.map(item => ({folderName: translateFolderName(item[0],'en',lang_code), textColor:item[1], textBGColor: TEXT_TRANSPARENT,folderEmoji : ''}) )
 }
 
 function standardize_color(str){
@@ -253,19 +288,34 @@ function standardize_color(str){
 
 function onLoadConfigOK(data){
     debugLog(['onLoadConfigOK',data])
-    let field_name
-    let loaded_field
-    for (let i = 0;i < config_field_names.length;i++){
-        field_name = config_field_names[i]
-        if (data.hasOwnProperty(field_name)){
-            loaded_field = data[field_name]
-            if (FORCE_RESET_CONFIG) {
-                //
+    let fieldName
+    let err_cnt = 0
+    if (!FORCE_RESET_CONFIG){
+        for (let i = 0;i < config_field_names.length;i++){
+            fieldName = config_field_names[i]
+            if (data.hasOwnProperty(fieldName)){
+                config[fieldName] = data[fieldName]
             } else {
-                config[field_name] = loaded_field
+                debugLog(['missing field:',fieldName])
+                err_cnt++
             }
-        } else {
-            debugLog(['missing field:',field_name])
+        }
+    }
+    let loaded_version = config.config_version ?? 0
+    if (loaded_version !== CONFIG_VERSION) {
+        debugLog(['config version mismatch:',config.config_version,CONFIG_VERSION])
+        err_cnt++
+    }
+    if (FORCE_RESET_CONFIG || 0 < err_cnt){
+        debugLog('config clever reset! (trying to load existng icons + colors)')
+        config = generate_default_config(LANG_CODE)
+        fieldName = 'icons'
+        if (data.hasOwnProperty(fieldName)){
+            config[fieldName] = normalizeIcons(data[fieldName])
+        }
+        fieldName = 'colors'
+        if (data.hasOwnProperty(fieldName)){
+            config[fieldName] = normalizeColors(data[fieldName])
         }
     }
 }
@@ -291,6 +341,14 @@ function str2int(s){
         return i
     }
 }
+
+function anythingTrue(obj){
+    let result = false
+    Object.keys(obj).forEach(item => {result = (result || obj[item])
+    })
+    return result
+}
+
 
 function sortColors(colors){
     return colors.sort( ( a , b) => a.folderName.localeCompare(b.folderName)  )
@@ -438,7 +496,7 @@ function sanitize_base64(data){
         return data
     }
     try {
-        let raw = atob(data)
+        atob(data)
     } catch(e) {
         return false
     }
@@ -545,8 +603,8 @@ function generateIconStyle(iconName,pngBase64,color,enableText2image){
     return attributes.join('\n')
 }
 
-function generateIconNamePreviewStyle(iconName,txt_or_pngBase64,color){
-    color = color ?? iconColor_DEFAULT ?? iconColor_PREVIEW_DEFAULT
+function generateIconNamePreviewStyle(iconName,txt_or_pngBase64,color,toRight){
+    color = color ?? iconColor_DEFAULT ?? iconColor_DEBUG_DEFAULT
     let clr = standardize_color(color)
     let size = 16
     let delta = 5
@@ -566,13 +624,47 @@ function generateIconNamePreviewStyle(iconName,txt_or_pngBase64,color){
             }
         }
     }
-    let bgposx = `right ${delta}px`
+    let right = (toRight ? 'right' : 'left')
+    let bgposx = `${right} ${delta}px`
     return `background-image: url(${img});
             background-repeat: no-repeat;
             background-position-x: ${bgposx};
             background-position-y: center;
             background-size: ${size}px ${size}px;
-            padding-right: ${pad}px;`
+            padding-${right}: ${pad}px;`
+}
+
+function findDataIconName(folderName,lang){
+    let dataIconName = null
+    for (let i = 0;(dataIconName === null) && (i < commonFoldersDatabase.length);i++){
+        if (commonFoldersDatabase[i].folderName.hasOwnProperty(lang) &&
+            commonFoldersDatabase[i].folderName[lang] === folderName){
+            dataIconName = commonFoldersDatabase[i].dataIconName
+        }
+    }
+    return dataIconName
+}
+
+function generateFolderNamePreviewStyle(folderName,txt_or_pngBase64,color){
+    let dataIconName = findDataIconName(folderName,config.misc.outlookLanguage) ?? sz_FABRIC_FOLDER
+    let iconEmoji = null
+    let iconColor = null
+    for (let i = 0;(iconEmoji === null) && i < config.icons.length;i++){
+        if (config.icons[i].iconName === dataIconName){
+            iconEmoji = config.icons[i].iconText
+            iconColor = config.icons[i].iconColor
+        }
+    }
+
+    if (dataIconName === sz_FABRIC_FOLDER && txt_or_pngBase64 !== null && txt_or_pngBase64 !== ''){
+        iconEmoji = txt_or_pngBase64
+        iconColor = color
+    }
+    return generateIconNamePreviewStyle(dataIconName,iconEmoji ?? txt_or_pngBase64, iconColor ?? color,false)
+}
+
+function generateFolderEmojiPlaceholder(folderName){
+    return find_emoji_placeholder(findDataIconName(folderName,config.misc.outlookLanguage) ?? sz_FABRIC_FOLDER,'?.?')
 }
 
 
@@ -588,4 +680,29 @@ function text2image(txt,color,size){
     ctx.scale(size/CTX_WIDTH,size/CTX_WIDTH)
     ctx.fillText(txt ?? '??',CTX_WIDTH/2,CTX_WIDTH/2,CTX_WIDTH)
     return canvas.toDataURL()
+}
+
+function switchNextLanguage(){
+    let actLangCode = config.misc.outlookLanguage
+    let actIdx = lang_codes.findIndex(value => (value === actLangCode)   )
+    if (actIdx < 0){
+        return
+    }
+    let nextIdx = actIdx + 1
+    if (lang_codes.length <= nextIdx){
+        nextIdx = 0
+    }
+    let nextLangCode = lang_codes[nextIdx]
+    let actTxt
+    let newTxt
+    for (let i = 0; i < config.colors.length;i++){
+        actTxt = config.colors[i].folderName
+        newTxt = translateFolderName(actTxt,actLangCode,nextLangCode)
+        if (newTxt !== actTxt){
+            config.colors[i].folderName = newTxt
+            //debugLog(['translated:',actTxt,newTxt])
+        }
+    }
+    config.misc.outlookLanguage = nextLangCode
+    alert(`Language switched from '${actLangCode}' to '${nextLangCode}'.`)
 }

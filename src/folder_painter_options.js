@@ -22,6 +22,7 @@ const emojiAppend = '➕'
 const emojiLoadFile = '✔️'
 
 const emojiResetConfig = '🆑'
+const emojiSwitchLang = '👅'
 const emojiLoadFileRadio = emojiLoadFile
 
 const sandboxDivCoreID = 'folder-painter-sandbox-div-core'
@@ -31,6 +32,8 @@ const cmdLoadJSON = 'load-json'
 const loadJSONtextAreaID = 'json-textarea'
 const cmdResetConfig = 'reset-config'
 const questionResetConfig = 'Are you sure?'
+
+const cmdSwitchLanguage = 'switch-language'
 
 const radiobuttonsDivCoreID = 'folder-painter-radio-buttons-div-core'
 const radiobuttonsDivID = 'folder-painter-radio-buttons-div'
@@ -80,15 +83,18 @@ let tooltips = {
     folderName : 'Folder name',
     textColor : 'Modify textColor',
     textBGColor : 'Modify textBackgroundColor',
+    folderIconText : 'Folder icon emoji or PNG base64 data',
     textDelete : 'Delete entry',
 
     folderNameNew : 'New folder name',
     textColorNew : 'New textColor',
     textBGColorNew : 'New textBackgroundColor',
+    folderIconTextNew : 'New older icon emoji or PNG base64 data',
     folderAppendNew : 'Save new entry',
 
     loadConfig : 'Load configuration from JSON',
-    resetConfig : 'Reset to default configuration'
+    resetConfig : 'Reset to default configuration',
+    switchLanguage : 'Switch to next language'
 }
 
 
@@ -117,25 +123,37 @@ function setScreenElementValue(id,new_value){
     }
 }
 
-
 function getActiveTabID(tab_index){
-    return radioButtonsData[tab_index].id ?? null
+    return radioButtonsData[tab_index]?.id ?? null
 }
 
 function saveTabScreenElements(tab_index){
     let tabID = getActiveTabID(tab_index)
+    let testValue
     if (tabID === radioButtonsData_IDs.panel_colors){
         for (let i = 0;i < config.colors.length;i++){
-            config.colors[i].textColor = getScreenElementValue(colorIDprefix + i + '+1') ?? config.colors[i].textColor
-            config.colors[i].textBGColor = getScreenElementValue(colorIDprefix + i + '+2') ?? config.colors[i].textBGColor
+            testValue = getScreenElementValue(colorIDprefix + i + '+0')
+            if (testValue !== config.colors[i].folderName) {
+                // error
+            } else {
+                config.colors[i].textColor = getScreenElementValue(colorIDprefix + i + '+1') ?? config.colors[i].textColor
+                config.colors[i].textBGColor = getScreenElementValue(colorIDprefix + i + '+2') ?? config.colors[i].textBGColor
+                config.colors[i].folderEmoji = getScreenElementValue(colorIDprefix + i + '+3') ?? config.colors[i].folderEmoji
+            }
         }
         config.default_values.newFolder = getScreenElementValue(colorIDprefix + '-1+0') ?? config.default_values.newFolder
         config.default_values.textColor = getScreenElementValue(colorIDprefix + '-1+1') ?? config.default_values.textColor
         config.default_values.textBGColor = getScreenElementValue(colorIDprefix + '-1+2') ?? config.default_values.textBGColor
+        config.default_values.folderEmoji = getScreenElementValue(colorIDprefix + '-1+3') ?? config.default_values.folderEmoji
     } else if (tabID === radioButtonsData_IDs.panel_icons){
         for (let i = 0;i < config.icons.length;i++){
-            config.icons[i].iconText = getScreenElementValue(iconIDprefix + i + '+1') ?? config.icons[i].iconText
-            config.icons[i].iconColor = getScreenElementValue(iconIDprefix + i + '+2') ?? config.icons[i].iconColor
+            testValue = getScreenElementValue(iconIDprefix + i + '+0')
+            if (testValue !== config.icons[i].iconName) {
+                // error
+            } else {
+                config.icons[i].iconText = getScreenElementValue(iconIDprefix + i + '+1') ?? config.icons[i].iconText
+                config.icons[i].iconColor = getScreenElementValue(iconIDprefix + i + '+2') ?? config.icons[i].iconColor
+            }
         }
         config.default_values.iconName = getScreenElementValue(iconIDprefix + '-1+0') ?? config.default_values.iconName
         config.default_values.emoji = getScreenElementValue(iconIDprefix + '-1+1') ?? config.default_values.emoji
@@ -179,6 +197,7 @@ function generate_color_config_table_line(colorz,idx){
                     <td></td>
                     <td></td>
                     <td></td>
+                    <td></td>
                </tr>`
     }
     let i = str2int(idx)
@@ -196,14 +215,17 @@ function generate_color_config_table_line(colorz,idx){
         let lastTextBGColor = standardize_color(config.default_values.textBGColor)
         let lastStyle = `color:${f_textColor};background-color:${lastTextBGColor};`
         let lastValue = config.default_values.newFolder
-        return `<tr id="${colorLineIDPrefix}-1 class="selector_row">
+        let lastFolderEmoji = config.default_values.folderEmoji
+        return `<tr id="${colorLineIDPrefix}-1" class="selector_row">
                        <td><input id="${colorIDprefix}-1+0" type="text" class="quick_search" placeholder="new folder name" value="${lastValue}" title="${tooltips.folderNameNew}" style="${lastStyle}" data-action="${cmdChangeColor}" data-id="-1"></td>
+                       <td><input id="${colorIDprefix}-1+3" type="text" title="${tooltips.folderIconTextNew}" class="emoji" placeholder="emoji" value="${lastFolderEmoji}" data-action="${cmdChangeColor}" data-id="-1"></td>
                        <td><input id="${colorIDprefix}-1+1" type="color" title="${tooltips.textColorNew}" value="${lastTextColor}" data-action="${cmdChangeColor}" data-id="-1" ></td>
                        <td><input id="${colorIDprefix}-1+2" type="color" title="${tooltips.textBGColorNew}" value="${lastTextBGColor}" data-action="${cmdChangeColor}" data-id="-1" ></td>
                        <td><button title="${tooltips.folderAppendNew}" data-action="${cmdChangeColor}" data-id="-1">${emojiAppend}</button></td>
                   </tr>`
     } else {
         let folderName = colorz[i].folderName
+        let folderEmoji = colorz[i].folderEmoji ?? ''
         let textColor = standardize_color(colorz[i].textColor)
         let f_textColor
         if (ENABLE_TRANSPARENT_TEXTCOLOR && (textColor === FAKE_TRANSPARENT_COLOR)){
@@ -212,9 +234,11 @@ function generate_color_config_table_line(colorz,idx){
             f_textColor =  standardize_color(textColor)
         }
         let textBGColor = standardize_color(colorz[i].textBGColor)
-        let style = `color:${f_textColor};background-color:${textBGColor};`
+        let previewStyle = `color:${f_textColor};background-color:${textBGColor};` + generateFolderNamePreviewStyle(folderName,folderEmoji,textColor)
+        let folderIconPlaceholder = generateFolderEmojiPlaceholder(folderName)
         return `<tr id="${colorLineIDPrefix}${i}">
-                   <td><input id="${colorIDprefix}${i}+0" readonly="readonly" type="text" value="${folderName}" title="${tooltips.folderName}" style="${style}"></td>
+                   <td><input id="${colorIDprefix}${i}+0" readonly="readonly" type="text" value="${folderName}" title="${tooltips.folderName}" style="${previewStyle}"></td>
+                   <td><input id="${colorIDprefix}${i}+3" type="text" title="${tooltips.folderIconText}" class="emoji" placeholder="${folderIconPlaceholder}" value="${folderEmoji}" data-action="${cmdChangeColor}" data-id="${i}"></td>
                    <td><input id="${colorIDprefix}${i}+1" type="color" title="${tooltips.textColor}" value="${textColor}" data-action="${cmdChangeColor}" data-id="${i}" ></td>
                    <td><input id="${colorIDprefix}${i}+2" type="color" title="${tooltips.textBGColor}" value="${textBGColor}" data-action="${cmdChangeColor}" data-id="${i}" ></td>
                    <td><button title="${tooltips.textDelete}" data-action="${cmdRemoveColor}" data-id="${i}">${emojiDelete}</button></td>
@@ -262,7 +286,7 @@ function generate_icon_config_table_line(iconz,idx){
         let lastEmoji = config.default_values.emoji
         let lastColor = standardize_color(config.default_values.iconColor)
         let lastSaveButtonClass = "save_button_inactive" // todo...
-        return `<tr id="${iconLineIDPrefix}-1" class="selector_row">
+        return `<tr id="${iconLineIDPrefix}-1" class="selector_row" >
                      <td><input id="${iconIDprefix}-1+0" type="text" title="${tooltips.iconNameNew}" class="icon_name_input quick_search" placeholder="new icon name" value="${lastIconName}" data-action="${cmdChangeIcon}" data-id="-1"></td>
                      <td><input id="${iconIDprefix}-1+1" type="text" title="${tooltips.iconTextNew}" class="emoji" placeholder="emoji" value="${lastEmoji}" data-action="${cmdChangeIcon}" data-id="-1"></td>
                      <td><input id="${iconIDprefix}-1+2" type="color" title="${tooltips.iconColorNew}" value="${lastColor}" data-action="${cmdChangeIcon}" data-id="-1" ></td>
@@ -275,7 +299,7 @@ function generate_icon_config_table_line(iconz,idx){
         let iconColor = standardize_color(iconz[i].iconColor)
         let iconPlaceholder = find_emoji_placeholder(iconName,'?')
         let saveButtonClass = "save_button_inactive" // todo...
-        let previewStyle = generateIconNamePreviewStyle(iconName,iconText,iconColor)
+        let previewStyle = generateIconNamePreviewStyle(iconName,iconText,iconColor,true)
         return `<tr id="${iconLineIDPrefix}${i}">
                    <td><input style="${previewStyle}" id="${iconIDprefix}${i}+0" readonly="readonly" type="text" title="${tooltips.iconName}" value="${iconName}"></td>
                    <td><input id="${iconIDprefix}${i}+1" type="text" title="${tooltips.iconText}" class="emoji" placeholder="${iconPlaceholder}" value="${iconText}" data-action="${cmdChangeIcon}" data-id="${i}"></td>
@@ -308,7 +332,7 @@ function generate_icon_config_table(iconz){
 }
 
 function reset_config(){
-    config = generate_default_config(config.outlook_language)
+    config = generate_default_config(config.misc.outlookLanguage)
 }
 
 function generate_public_config_JSON_text(cfg){
@@ -339,6 +363,7 @@ function generate_json_div(cfg){
                 <div>
                     <button class="single_button" data-action="${cmdLoadJSON}" data-id="-1" title="${tooltips.loadConfig}" >${emojiLoadFile}</button>
                     <button class="single_button" data-action="${cmdResetConfig}" data-id="-1" title="${tooltips.resetConfig}" >${emojiResetConfig}</button>
+                    <button class="single_button" data-action="${cmdSwitchLanguage}" data-id="-1" title="${tooltips.switchLanguage}" >${emojiSwitchLang}</button>
                 </div>                 
             </div>`
 }
@@ -417,6 +442,7 @@ function render_color_config_table(cfg){
                     <thead>
                         <tr>
                             <th>Folder name</th>
+                            <th>Emoji/PNG</th>
                             <th>Text color</th>
                             <th>Text BG</th>
                             <th>Add/Remove</th>
@@ -484,7 +510,7 @@ function render(cfg){
     debugLog(['render - active_tab:',cfg.active_tab])
     let radio = render_radio(cfg)
     let content = 'error'
-    let activePanelID = radioButtonsData[cfg.active_tab].id ?? radioButtonsData_IDs.error
+    let activePanelID = radioButtonsData[cfg.active_tab]?.id ?? radioButtonsData_IDs.error
     if (activePanelID === radioButtonsData_IDs.panel_colors){
         content = render_color_config_table(cfg)
     } else if (activePanelID === radioButtonsData_IDs.panel_icons){
@@ -522,25 +548,6 @@ function draw_config_table(cfg){
     updateHTMLcontent(contentDivIDs.radio.id,data.radio,contentDivIDs.radio.raw)
     updateHTMLcontent(contentDivIDs.panel.id,data.panel,contentDivIDs.panel.raw)
 
-
-    filterVisibleColors(config.default_values.newFolder)
-    filterVisibleIcons(config.default_values.iconName)
-
-
-}
-
-function draw_config_table_OLD(cfg){
-    // document.getElementById(formID).innerHTML = render(cfg)
-    // 'innerHTML' direct modification is a security risk, so we use DOMparser:
-    let e = document.getElementById(formID)
-    const data = render(cfg)
-    const parser = new DOMParser()
-    const parsed = parser.parseFromString(data, `text/html`)
-    const tags = parsed.getElementsByTagName(`body`)
-    e.innerHTML = ``
-    for (const tag of tags) {
-        e.appendChild(tag)
-    }
     filterVisibleColors(config.default_values.newFolder)
     filterVisibleIcons(config.default_values.iconName)
 }
@@ -599,8 +606,7 @@ function modify_inputIconPreviewStyle(id){
         let iconName = getScreenElementValue(`${iconIDprefix}${idx}+0`) ?? 'unknown'
         let emoji = getScreenElementValue(`${iconIDprefix}${idx}+1`) ?? ':-('
         let color = getScreenElementValue(`${iconIDprefix}${idx}+2`) ?? 'cyan'
-        let newPreviewStyle = generateIconNamePreviewStyle(iconName,emoji,color)
-        elem.style = newPreviewStyle
+        elem.style = generateIconNamePreviewStyle(iconName, emoji, color, true)
     }
 }
 
@@ -668,9 +674,17 @@ function handleKeyDown(e){
     let action = e.target.getAttribute('data-action')
     let id = e.target.getAttribute('data-id')
     debugLog(['handleKeyDown',e.key,e.keyCode,e.code,control_type,action,id])
-
     if (e.key === "Enter"){ // key:"Enter", keyCode:13
-        if (control_type !== 'button'){
+        if (control_type === 'input'){
+            if (action === cmdChangeColor){
+                let idx = str2int(id)
+                if ((idx !== false) && (0 <= idx)){ // a -1-hez van külön mentés gomb!
+                    processButtonClick(action,id)
+                    return
+                }
+            }
+            e.preventDefault()
+        }else if (control_type !== 'button'){
             debugLog(['handleKeyDown - enter disabled',e.key,e.keyCode,e.code,control_type,action,id])
             e.preventDefault()  // preventing submit form when pressing enter on elements
         }
@@ -790,6 +804,7 @@ function processButtonClick(action,id){
             config.default_values.newFolder = document.getElementById(colorIDprefix + id + '+0').value
             config.default_values.textColor = document.getElementById(colorIDprefix + id + '+1').value
             config.default_values.textBGColor = document.getElementById(colorIDprefix + id + '+2').value
+            config.default_values.folderEmoji = document.getElementById(colorIDprefix + id + '+3').value
         } else {
             return false
         }
@@ -804,24 +819,28 @@ function processButtonClick(action,id){
             let newFolderNames = document.getElementById(colorIDprefix + id + '+0').value.split(colorListSeparator)
             let newTextColor = document.getElementById(colorIDprefix + id + '+1').value
             let newTextBGColor = document.getElementById(colorIDprefix + id + '+2').value
+            let newFolderEmoji = document.getElementById(colorIDprefix + id + '+3').value
             for (let j = 0; j < newFolderNames.length; j++) {
                 config.colors = config.colors.concat(
                     {
                         folderName: newFolderNames[j],
                         textColor: newTextColor,
-                        textBGColor: newTextBGColor
+                        textBGColor: newTextBGColor,
+                        folderEmoji: newFolderEmoji
                     }
                 )
             }
             config.default_values.newFolder = ''
             config.default_values.textColor = newTextColor
             config.default_values.textBGColor = newTextBGColor
+            config.default_values.folderEmoji = newFolderEmoji
         } else {
             // modify color item
             config.colors[idx] = {
                 folderName: config.colors[idx].folderName,
                 textColor: document.getElementById(colorIDprefix + id + '+1').value,
                 textBGColor: document.getElementById(colorIDprefix + id + '+2').value,
+                folderEmoji: document.getElementById(colorIDprefix + id + '+3').value
             }
         }
         //processButtonClick(cmdRadioButton,config.active_tab.toString())
@@ -861,6 +880,8 @@ function processButtonClick(action,id){
         if (confirmation(questionResetConfig)){
             reset_config()
         }
+    } else if (action === cmdSwitchLanguage) {
+        switchNextLanguage()
     } else {
         // invalid action
         debugLog(['processButtonClick - invalid action:',action,id])
