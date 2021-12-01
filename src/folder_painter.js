@@ -31,34 +31,34 @@ function modify_webpage_OLD(iconz,colorz){
 function modify_webpage(){
     debugLog(['modify_webpage'])
     let csss = Array()
-    if (config.enabled.icons){ // not perfect - don't use
-        let iconz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
-        let css_i = iconz.map(item =>
-            {
+    if (config.enabled.icons){
+        if (OLD_ICON_MODE){ // old, but good
+            let iconsz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
+            if (iconColor_DEBUG_DEFAULT === null || iconColor_DEBUG_DEFAULT === FAKE_TRANSPARENT_COLOR){
+                iconsz = iconsz.filter( item => {return (item.iconText !== '')} )
+            }
+            let css_b = iconsz.map(item => {
                 let {iconName,iconText,iconColor} = item
                 let newIconColor = iconColor ?? iconColor_DEFAULT
-                let st = generateIconStyle(iconName,iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
-                return `i[data-icon-name="${iconName}"] {${st}}`
-            }
-        ).join('\n')
-        csss = csss.concat(css_i)
-    }
-    if (config.enabled.icons_OLD){ // old, but good
-        let iconsz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
-        if (iconColor_DEBUG_DEFAULT === null || iconColor_DEBUG_DEFAULT === FAKE_TRANSPARENT_COLOR){
-            iconsz = iconsz.filter( item => {return (item.iconText !== '')} )
+                let st = generateIconStyleX(iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
+                return `i[data-icon-name="${iconName}"]:before {${st.before}}  i[data-icon-name="${iconName}"] {${st.element}}`
+            }).join('\n')
+            csss = csss.concat(css_b)
+        } else {// not perfect - don't use
+            let iconz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
+            let css_i = iconz.map(item =>
+                {
+                    let {iconName,iconText,iconColor} = item
+                    let newIconColor = iconColor ?? iconColor_DEFAULT
+                    let st = generateIconStyle(iconName,iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
+                    return `i[data-icon-name="${iconName}"] {${st}}`
+                }
+            ).join('\n')
+            csss = csss.concat(css_i)
         }
-        let css_b = iconsz.map(item => {
-            let {iconName,iconText,iconColor} = item
-            let newIconColor = iconColor ?? iconColor_DEFAULT
-            let st = generateIconStyleX(iconName,iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE)
-            return `i[data-icon-name="${iconName}"]:before {${st.before}}  i[data-icon-name="${iconName}"] {${st.element}}`
-        }).join('\n')
-        csss = csss.concat(css_b)
     }
     if (config.enabled.folderColors || config.enabled.folderIcons){
         let colorz = nullifyTransparentColors(normalizeColors(compactColors(config.colors)))
-
         let css_c = colorz.map(item => {
             let folderName = item.folderName
             let color = item.textColor ?? TEXT_TRANSPARENT
@@ -77,7 +77,7 @@ function modify_webpage(){
                 // A spec. könyvtárakat kihagyjuk! - azoknál más a data-icon-name, azaz saját ikon rendelhető hozzájuk
                 // vagy nincs hozzájuk külön data-icon-name
                 if (item.folderEmoji !== null && item.folderEmoji !== '') {
-                    let stx = generateIconStyleX('nuku',item.folderEmoji,color,ENABLE_TXT2IMAGE_INLINE)
+                    let stx = generateIconStyleX(item.folderEmoji,color,ENABLE_TXT2IMAGE_INLINE)
                     let iconEmojiStyle = ` div[role="treeitem"][title="${folderName}"] div i[data-icon-name="FabricFolder"]:before { ${stx.before} }`
                     result = result.concat(iconEmojiStyle)
                 }

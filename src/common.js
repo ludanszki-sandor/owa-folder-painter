@@ -18,8 +18,8 @@ const color_color_fields = {all: ['textColor','textBGColor'],
                             fg: ['textColor'],
                             bg:  ['textBGColor']}
 
-const config_field_names = ['icons','colors','active_tab','enabled','default_values','misc','config_version']
-const config_json_enabled_field_names = ['colors','icons','misc']
+const config_field_names = ['icons','colors','enabled','misc', 'default_values','active_tab','config_version']
+const config_json_enabled_field_names = ['colors','icons','enabled','misc']
 const lang_codes = ['en','hu']
 const iconColor_DEFAULT = 'blue' // color of the unchanged i[data-icon-name] elements
 const iconColor_DEBUG_DEFAULT = 'green' // ?????
@@ -43,7 +43,7 @@ const CTX_WIDTH = 128
 const ERROR_IMAGE = text2image('error','red',16)
 const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
 const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
-const CONFIG_VERSION = '0.8.5-pre-001'
+const CONFIG_VERSION = '0.8.5-pre-003'
 let config = generate_default_config(LANG_CODE) // ez az egyetlen globális változó, amely módosítható!
 const commonFoldersDatabase = generateCommonFoldersDatabase()
 
@@ -52,23 +52,25 @@ function generate_default_config(languageCode){
     return {
         icons: make_default_icons(),
         colors: make_default_colors(languageCode),
-        active_tab : 1,
-        enabled : {folderColors:true,folderIcons : true, icons: !OLD_ICON_MODE, icons_OLD: OLD_ICON_MODE, redNumbers : true},
-        default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT,folderEmoji:'',
-                          iconName : '', emoji : '', iconColor: iconColor_DEFAULT},
+        enabled : {folderColors: true,folderIcons: true, icons: true, redNumbers: true},
         misc : {
             outlookLanguage : languageCode,
             redNumbers :
                 {color : 'red',
                 BGColor : '#fffffe', // ez a mező lehet 'transparent' is - sajnos 'white' (#ffffff) esetén is átlátszó lesz :-)
                 borderColor :  'red', // ez is lehet 'transparent'
-                borderRadiusPX : 7}
+                borderRadiusPX : 7},
+            emojis :
+                {
+                    rightMinusMarginPX : 15
+                }
         },
+        default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT,folderEmoji:'',
+            iconName : '', emoji : '', iconColor: iconColor_DEFAULT},
+        active_tab : 1,
         config_version : CONFIG_VERSION
-
     }
 }
-
 
 function iconNameDatabase(){
   return  {
@@ -535,7 +537,7 @@ function sanitize_base64(data){
     return data
 }
 
-function generateIconStyleX(iconName,pngBase64,color,enableText2image){
+function generateIconStyleX(pngBase64,color,enableText2image){
     let img_width = icon_WIDTH
     let i_color = color ?? iconColor_DEBUG_DEFAULT
     let draw_color = color ?? iconColor_DEFAULT
@@ -580,7 +582,11 @@ function generateIconStyleX(iconName,pngBase64,color,enableText2image){
     }
     let st1 = `color:${i_color} !important;`
     if (st0 !== ''){
-        st1 += `margin-right:-12px;`
+        let padka = str2int('' +  config.misc.emojis.rightMinusMarginPX)
+        if (padka === false){
+            padka = 12
+        }
+        st1 += `margin-right:-${padka}px;`
     }
     return {before: st0, element: st1}
 }
