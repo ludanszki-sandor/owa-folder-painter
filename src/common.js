@@ -26,12 +26,12 @@ const iconColor_DEBUG_DEFAULT = 'green' // ?????
 const FORCE_HIDE_ORIGINAL_ICONS = true // mindenképp rejtse el az eredeti ikonokat - egyébként figyelni kell, hogy transparent-re állítsuk
 const icon_WIDTH = 16
 const ioon_RIGHT_PADDING = 8 // NULL ESETÉN CENTER (új módszernál)
-const OLD_ICON_MODE = true  // Sajnos az új módszer nem vált be
 
 const JSONmergeWithDefaultIconNames = true
 const iconColor_JSONmerge_DEFAULT = 'purple' // hogy lássuk a különbséget
+const OLD_CODES = false
 
-const sz_FABRIC_FOLDER = 'FabricFolder'
+const sz_FABRIC_FOLDER = OLD_CODES ? 'FabricFolder' : 'FolderRegular'
 const MIN_PNG_DATA_LENGTH = 32
 const ENABLE_TXT2IMAGE_INLINE = false // Az emojik-ból is képet generáljon-e (az új módszernél ha kikapcsoljuk, nem jelenik meg semmi)
 const FONTSIZE_TXT2IMAGE = 85
@@ -43,7 +43,7 @@ const CTX_WIDTH = 128
 const ERROR_IMAGE = text2image('error','red',16)
 const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
 const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
-const CONFIG_VERSION = '0.8.5-pre-003'
+const CONFIG_VERSION = '0.8.6'
 let config = generate_default_config(LANG_CODE) // ez az egyetlen globális változó, amely módosítható!
 const commonFoldersDatabase = generateCommonFoldersDatabase()
 
@@ -52,7 +52,7 @@ function generate_default_config(languageCode){
     return {
         icons: make_default_icons(),
         colors: make_default_colors(languageCode),
-        enabled : {folderColors: true,folderIcons: true, icons: true, redNumbers: true},
+        enabled : {folderColors: true,folderIcons: true, icons: true, redNumbers: true, svgModify : true, hover : true},
         misc : {
             outlookLanguage : languageCode,
             redNumbers :
@@ -62,8 +62,25 @@ function generate_default_config(languageCode){
                 borderRadiusPX : 7},
             emojis :
                 {
-                    rightMinusMarginPX : 15
-                }
+                    rightMinusMarginPX : 15,
+                    customRightMinusMargins : {
+                        ChevronDownRegular : 5,
+                        ChevronRightRegular : 5
+                    },
+                    customPaddings : {
+                        ChevronDownRegular : [0,5,0,0], // top,left,right,bottom
+                        ChevronRightRegular : [0,5,0,0],
+                    },
+                    resizeFont : true,
+                    fontSizePX : 15,
+                    customFontSizes : {
+                        ChevronDownRegular : 10,
+                        ChevronRightRegular : 10
+                    }
+                },
+            hover : {
+                BGColor : '#a5bddb'
+            }
         },
         default_values : {newFolder : '', textColor : 'blue', textBGColor: TEXT_TRANSPARENT,folderEmoji:'',
             iconName : '', emoji : '', iconColor: iconColor_DEFAULT},
@@ -80,14 +97,23 @@ function iconNameDatabase(){
       AddFavorite: '\uf0c8',
       AddFriend: '\ue8fa',
       AddIn: '\uf775',
+      AppsRegular : '?',
       Archive: '\uf03f',
+      ArchiveRegular: '?',
       ArrangeByFrom: '\uf678',
+      ArrowCurveDownRightRegular: '?',
+      ArrowHookUpLeftRegular : '?',
+      ArrowReplyRegular : '?',
+      ArrowUndoRegular: '?',
       Assign: '\ue9d3',
       Attach: '\ue723',
+      AttachRegular : '?',
+      Balloons: '?',
       BlockContact: '\ue8f8',
       Blocked: '\ue733',
       BoxLogo: '\ued75',
       Broom: '\uea99',
+      BroomRegular : '?',
       Calendar: '\ue787',
       Camera: '\ue722',
       Cancel: '\ue711',
@@ -96,24 +122,33 @@ function iconNameDatabase(){
       CheckMark: '\ue73e',
       ChevronDown: '\ue70d',
       ChevronDownMed: '\ue972',
+      ChevronLeft: '?',
+      ChevronDownRegular: '?',
       ChevronRight: '\ue76c',
       ChevronRightMed: '\ue974',
+      ChevronRightRegular: '?',
       CircleFill: '\uea3b',
       CircleRing: '\uea3a',
+      CityNext: '?',
       Clock: '\ue917',
+      ClockRegular : '?',
       Cloud: '\ue753',
       ClosePane: '\ue89f',
       CollapseContent: '\uf165',
       CommentUrgent: '\uf307',
-      ComposeRegular: '[/]',// svg:pencil in a square
+      ComposeRegular: '?',// svg:pencil in a square
       Contact: '\ue77b',
+      ContactCard: '?',
       ContactList: '\uf7e5',
       Copy: '\ue8c8',
       CreateMailRule: '\uf67a',
       Delete: '\ue74d',
+      DeleteRegular: '?',
+      docx20_svg : '?',
       DoubleChevronDown: '\uee04',
       Down: '\ue74b',
       Download: '\ue896',
+      DraftsRegular: '?',
       DropboxLogo: '\ued77',
       Edit: '\ue70f',
       EgnyteLogo: '\uf373',
@@ -126,45 +161,69 @@ function iconNameDatabase(){
       FabricUserFolder: '\uf5e5',
       FavoriteStarFill: '\ue735',
       Filter: '\ue71c',
+      FilterRegular: '?',
       Flag: '\ue7c1',
+      FlagFilled : '?',
+      FolderArrowRightRegular : '?',
+      FolderProhibitedRegular: '?',
+      FolderRegular: '?',
       Forward: '\ue72a',
       FullScreen: '\ue740',
       GlobalNavButton: '\ue700',
+      Globe: '?',
       GotoToday: '\ue8d1',
+      Group: '?',
       Important: '\ue8c9',
+      ImportantFilled : '?',
       Inbox: '\uf41c',
       Info: '\ue946',
+      InfoRegular : '?',
       InsertSignatureLine: '\uf677',
       Like: '\ue8e1',
       LikeSolid: '\uf3bf',
+      Link: '?',
       LinkedInLogo: '\uf20a',
       List: '\uea37',
       LocaleLanguage: '\uf2b7',
+      Location: '?',
       Mail: '\ue715',
       MailAlert: '\ued80',
+      MailInboxRegular: '?',
       MailOptions: '\uf82c',
+      MailReadRegular: '?',
       MarkAsProtected: '\uf6ae',
+      MicrosoftTeamsAdd: '?',
+      MicrosoftTeamsBrandLinkedIn: '?',
+      MicrosoftTeamsInfo: '?',
       MicrosoftTranslatorLogo: '\uf782',
       MiniExpandMirrored: '\uea5a',
       More: '\ue712',
+      MoreHorizontalRegular : '?',
       MoreVertical: '\uf2bc',
       NotePinned: '\ued9a',
+      NoteRegular: '?',
       OfficeChat: '\uf70f',
       OpenSource: '\uebc2',
       OpenInNewWindow: '\ue8a7',
+      OutOfOffice: '?',
       Page: '\ue7c3',
+      pdf20_svg : '?',
       People: '\ue716',
       Phishing: '\uf679',
       Phone: '\ue717',
       Photo2: '\ueb9f',
       Pin: '\ue718',
+      PinFilled : '?',
       Pinned: '\ue840',
       PinnedSolid: '\uf676',
+      PinRegular : '?',
       PlainText: '\uf834',
+      PlannerLogo: '?',
       Play: '\ue768',
       PlayerSettings: '\uef58',
       POI: '\uecaf',
       Print: '\ue749',
+      ProhibitedRegular : '?',
       QuickNote: '\ue70b',
       Read: '\ue8c3',
       ReadOutLoud: '\uf112',
@@ -174,15 +233,19 @@ function iconNameDatabase(){
       Reply: '\ue97a',
       ReplyAll: '\uee0a',
       RevToggleKey: '\ue845',
+      Ribbon: '?',
       Save: '\ue74e',
       Search: '\ue721',
       Send: '\ue724',
+      SendRegular: '?',
       Settings: '\ue713',
       Share: '\ue72d',
+      ShoppingCart: '?',
       SortDown: '\uee69',
       StarFilled: '\u2605', // svg: filled star
       StatusCircleCheckmark: '\uf13e',
       Tag: '\ue8ec',
+      TagRegular : '?',
       TagSolid: '\uf70e',
       ToDoLogoOutline: '\uf75b',
       Undo: '\ue7a7',
@@ -218,14 +281,26 @@ function make_default_icons(){
     const emojis = {
         Inbox: '📮',
         Edit: '✏',
-        Send: '📯',
+        Send: '✈',
         Delete: '🗑',
-        Blocked: '💩',
+        Blocked: '🚯',
         Archive: '🏴‍☠',
         QuickNote: '🧾',
         FabricFolder: '📭',
         ChevronRightMed: '👉',
-        ChevronDownMed: '👇'}
+        ChevronDownMed: '👇',
+
+        MailInboxRegular: '📮',
+        DraftsRegular: '✏',
+        SendRegular: '✈',
+        DeleteRegular: '🗑',
+        FolderProhibitedRegular: '🚯',
+        ArchiveRegular: '🏴‍☠',
+        NoteRegular: '🧾',
+        FolderRegular: '📭',
+        ChevronRightRegular: '👉',
+        ChevronDownRegular: '👇',
+}
     let db = iconNameDatabase()
     return Object.keys(db).map(key =>
         {
@@ -244,20 +319,28 @@ function find_emoji_placeholder(dataIconName,defaultResult){
 }
 
 function generateCommonFoldersDatabase(){
+    const chevro = OLD_CODES ? 'ChevronRightMed' : 'ChevronRightRegular'
     return [
-        {dataIconName: 'Inbox', folderName: {en: 'Inbox', hu: 'Beérkezett üzenetek'}},
-        {dataIconName: 'Edit', folderName: {en: 'Drafts', hu: 'Piszkozatok'}},
-        {dataIconName: 'Send', folderName: {en: 'Sent Items', hu: 'Elküldött elemek'}},
-        {dataIconName: 'Delete', folderName: {en: 'Deleted Items', hu: 'Törölt elemek'}},
-        {dataIconName: 'Blocked', folderName: {en: 'Junk Email', hu: 'Levélszemét'}},
-        {dataIconName: 'Archive', folderName: {en: 'Archive', hu: 'Archívum'}},
-        {dataIconName: 'QuickNote', folderName: {en: 'Notes', hu: 'Feljegyzések'}},
+        {dataIconName: OLD_CODES ? 'Inbox' : 'MailInboxRegular' , folderName: {en: 'Inbox', hu: 'Beérkezett üzenetek'}},
+        {dataIconName: OLD_CODES ? 'Edit' : 'DraftsRegular' , folderName: {en: 'Drafts', hu: 'Piszkozatok'}},
+        {dataIconName: OLD_CODES ? 'Send' : 'SendRegular', folderName: {en: 'Sent Items', hu: 'Elküldött elemek'}},
+        {dataIconName: OLD_CODES ? 'Delete' : 'DeleteRegular', folderName: {en: 'Deleted Items', hu: 'Törölt elemek'}},
+        {dataIconName: OLD_CODES ? 'Blocked' : 'FolderProhibitedRegular', folderName: {en: 'Junk Email', hu: 'Levélszemét'}},
+        {dataIconName: OLD_CODES ? 'Archive' : 'ArchiveRegular', folderName: {en: 'Archive', hu: 'Archívum'}},
+        {dataIconName: OLD_CODES ? 'QuickNote' : 'NoteRegular', folderName: {en: 'Notes', hu: 'Feljegyzések'}},
 
         {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'Conversation History', hu: 'Beszélgetési előzmények'}},
 
-        {dataIconName: 'ChevronRightMed', folderName: {en: 'Favorites', hu: 'Kedvencek'}},
-        {dataIconName: 'ChevronRightMed', folderName: {en: 'Folders', hu: 'Mappák'}},
-        {dataIconName: 'ChevronRightMed', folderName: {en: 'Groups', hu: 'Csoportok'}}
+        // todo: angolul...
+        {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'Észlelt elemek', hu: 'Észlelt elemek'}},
+        {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'RSS-előfizetések', hu: 'RSS-előfizetések'}},
+
+
+
+
+        {dataIconName: chevro, folderName: {en: 'Favorites', hu: 'Kedvencek'}},
+        {dataIconName: chevro, folderName: {en: 'Folders', hu: 'Mappák'}},
+        {dataIconName: chevro, folderName: {en: 'Groups', hu: 'Csoportok'}}
     ]
 }
 
@@ -335,7 +418,7 @@ function onLoadConfigOK(data){
         err_cnt++
     }
     if (FORCE_RESET_CONFIG || 0 < err_cnt){
-        debugLog('config clever reset! (trying to load existng icons + colors)')
+        debugLog('config clever reset! (trying to load existing icons + colors)')
         config = generate_default_config(LANG_CODE)
         fieldName = 'icons'
         if (data.hasOwnProperty(fieldName)){
@@ -493,7 +576,7 @@ function compactIcons(icons){
     })
 }
 
-function iconCollector(importants){
+function iconCollector(importants, emptyInnertextEnabled = true){
     let inputs = document.getElementsByTagName('i')
     let found = Array()
     let iconName
@@ -506,9 +589,9 @@ function iconCollector(importants){
 
     for(let i = 0; i < inputs.length; i++) {
         iconName = inputs[i].dataset.iconName
-        hint = inputs[i].innerText
+        hint = inputs[i].innerText  // Újítás 2022.05.09. Sok új elem került be, ahol az emoji helyett svg van, ezért nincs innerText-je!!!
         important = importants.includes(iconName)
-        if (important || hint !== ''){
+        if (important || hint !== '' || emptyInnertextEnabled){
             existing_hint = find_emoji_placeholder(iconName,defaulthintvalue)
             if (important || existing_hint === defaulthintvalue || existing_hint === ''){
                 new_item = {iconName:iconName, iconText:hint, important: important}
@@ -525,6 +608,7 @@ function iconCollector(importants){
     //return found
 }
 
+
 function sanitize_base64(data){
     if (DEBUG_DISABLE_sanitize_base64){
         return data
@@ -537,7 +621,7 @@ function sanitize_base64(data){
     return data
 }
 
-function generateIconStyleX(pngBase64,color,enableText2image){
+function generateIconStyleX(pngBase64,color,enableText2image,iconName = null){
     let img_width = icon_WIDTH
     let i_color = color ?? iconColor_DEBUG_DEFAULT
     let draw_color = color ?? iconColor_DEFAULT
@@ -559,7 +643,14 @@ function generateIconStyleX(pngBase64,color,enableText2image){
             } else {
                 foFa = FONTS_EMOJI
             }
-            st0 = `color:${draw_color}; font-family:${foFa}; content:"${pngBase64}";`
+            st0 = `color:${draw_color}; font-family:${foFa};font-style:normal; content:"${pngBase64}";`
+            if (config.misc.emojis.resizeFont){
+                let fsize = config.misc.emojis.fontSizePX
+                if (iconName != null && config.misc.emojis.customFontSizes.hasOwnProperty(iconName)){
+                    fsize = config.misc.emojis.customFontSizes[iconName]
+                }
+                st0 += `font-size:${fsize}px;`
+            }
         }
     } else {
         pngBase64 = sanitize_base64(pngBase64)
@@ -582,11 +673,27 @@ function generateIconStyleX(pngBase64,color,enableText2image){
     }
     let st1 = `color:${i_color} !important;`
     if (st0 !== ''){
-        let padka = str2int('' +  config.misc.emojis.rightMinusMarginPX)
-        if (padka === false){
-            padka = 12
+        let marg = config.misc.emojis.rightMinusMarginPX
+        if (iconName !== null && config.misc.emojis.customRightMinusMargins.hasOwnProperty(iconName)){
+            marg = config.misc.emojis.customRightMinusMargins[iconName]
         }
-        st1 += `margin-right:-${padka}px;`
+        st1 += `margin-right:-${marg}px;`
+        if (iconName !== null && config.misc.emojis.customPaddings.hasOwnProperty(iconName)){
+            let padka = config.misc.emojis.customPaddings[iconName]
+            //st1 += `padding:${padka}px;`
+            if (padka[0] != 0){
+                st1 += `padding-top:${padka[0]}px;`
+            }
+            if (padka[1] != 0){
+                st1 += `padding-left:${padka[1]}px;`
+            }
+            if (padka[2] != 0){
+                st1 += `padding-right:${padka[2]}px;`
+            }
+            if (padka[3] != 0){
+                st1 += `padding-bottom:${padka[3]}px;`
+            }
+        }
     }
     return {before: st0, element: st1}
 }
