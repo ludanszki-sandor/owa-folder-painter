@@ -43,7 +43,7 @@ const CTX_WIDTH = 128
 const ERROR_IMAGE = text2image('error','red',16)
 const DEBUG_DISABLE_sanitize_base64 = false // TESZTELÉSHEZ -> YQ==);border:33px solid red;background-image: url("paper.gif"
 const COPY_PLACEHOLDERS = false // icon reset esetén a placeholderek átmásolása az iconText mezőkbe?
-const CONFIG_VERSION = '0.8.6'
+const CONFIG_VERSION = '0.8.7'
 let config = generate_default_config(LANG_CODE) // ez az egyetlen globális változó, amely módosítható!
 const commonFoldersDatabase = generateCommonFoldersDatabase()
 
@@ -52,7 +52,10 @@ function generate_default_config(languageCode){
     return {
         icons: make_default_icons(),
         colors: make_default_colors(languageCode),
-        enabled : {folderColors: true,folderIcons: true, icons: true, redNumbers: true, svgModify : true, hover : true},
+        enabled : {folderColors: true,folderIcons: true, icons: true, redNumbers: true,
+            svgModify : false, // csak 2205-től volt érvényes, de 2208-tól már nem kell
+            mod2208 : true, // 2208-tól érvényes módosítások
+            hover : true},
         misc : {
             outlookLanguage : languageCode,
             redNumbers :
@@ -97,23 +100,25 @@ function iconNameDatabase(){
       AddFavorite: '\uf0c8',
       AddFriend: '\ue8fa',
       AddIn: '\uf775',
-      AppsRegular : '?',
+      AppsRegular : '\ue05f',
       Archive: '\uf03f',
-      ArchiveRegular: '?',
+      ArchiveRegular: '\ue067',
       ArrangeByFrom: '\uf678',
       ArrowCurveDownRightRegular: '?',
+      ArrowForwardRegular: "\ue0c5",
       ArrowHookUpLeftRegular : '?',
-      ArrowReplyRegular : '?',
-      ArrowUndoRegular: '?',
+      ArrowReplyAllRegular: "\ue0f5",
+      ArrowReplyRegular : '\ue0f3',
+      ArrowUndoRegular: '\ue13b',
       Assign: '\ue9d3',
       Attach: '\ue723',
-      AttachRegular : '?',
+      AttachRegular : '\ue14b',
       Balloons: '?',
       BlockContact: '\ue8f8',
       Blocked: '\ue733',
       BoxLogo: '\ued75',
       Broom: '\uea99',
-      BroomRegular : '?',
+      BroomRegular : '\ue23b',
       Calendar: '\ue787',
       Camera: '\ue722',
       Cancel: '\ue711',
@@ -123,32 +128,34 @@ function iconNameDatabase(){
       ChevronDown: '\ue70d',
       ChevronDownMed: '\ue972',
       ChevronLeft: '?',
-      ChevronDownRegular: '?',
+      ChevronDownRegular: '\ue36d',
       ChevronRight: '\ue76c',
       ChevronRightMed: '\ue974',
-      ChevronRightRegular: '?',
+      ChevronRightRegular: '\ue371',
+      ChevronUpRegular: "\ue373",
       CircleFill: '\uea3b',
       CircleRing: '\uea3a',
       CityNext: '?',
       Clock: '\ue917',
-      ClockRegular : '?',
+      ClockRegular : "\ue3cd",
       Cloud: '\ue753',
       ClosePane: '\ue89f',
       CollapseContent: '\uf165',
       CommentUrgent: '\uf307',
-      ComposeRegular: '?',// svg:pencil in a square
+      ComposeRegular: '\ue442',
       Contact: '\ue77b',
       ContactCard: '?',
       ContactList: '\uf7e5',
       Copy: '\ue8c8',
       CreateMailRule: '\uf67a',
       Delete: '\ue74d',
-      DeleteRegular: '?',
+      DeleteArrowBackRegular: "\ue4dc",
+      DeleteRegular: '\ue4da',
       docx20_svg : '?',
       DoubleChevronDown: '\uee04',
       Down: '\ue74b',
       Download: '\ue896',
-      DraftsRegular: '?',
+      DraftsRegular: '\ue5e0',
       DropboxLogo: '\ued77',
       Edit: '\ue70f',
       EgnyteLogo: '\uf373',
@@ -161,12 +168,12 @@ function iconNameDatabase(){
       FabricUserFolder: '\uf5e5',
       FavoriteStarFill: '\ue735',
       Filter: '\ue71c',
-      FilterRegular: '?',
+      FilterRegular: '\ue68c',
       Flag: '\ue7c1',
       FlagFilled : '?',
-      FolderArrowRightRegular : '?',
-      FolderProhibitedRegular: '?',
-      FolderRegular: '?',
+      FolderArrowRightRegular : '\ue6c5',
+      FolderProhibitedRegular: '\ue6d9',
+      FolderRegular: '\ue6bf',
       Forward: '\ue72a',
       FullScreen: '\ue740',
       GlobalNavButton: '\ue700',
@@ -174,7 +181,7 @@ function iconNameDatabase(){
       GotoToday: '\ue8d1',
       Group: '?',
       Important: '\ue8c9',
-      ImportantFilled : '?',
+      ImportantFilled : '\ue7c7',
       Inbox: '\uf41c',
       Info: '\ue946',
       InfoRegular : '?',
@@ -188,9 +195,9 @@ function iconNameDatabase(){
       Location: '?',
       Mail: '\ue715',
       MailAlert: '\ued80',
-      MailInboxRegular: '?',
+      MailInboxRegular: '\ue875',
       MailOptions: '\uf82c',
-      MailReadRegular: '?',
+      MailReadRegular: '\ue893',
       MarkAsProtected: '\uf6ae',
       MicrosoftTeamsAdd: '?',
       MicrosoftTeamsBrandLinkedIn: '?',
@@ -198,10 +205,10 @@ function iconNameDatabase(){
       MicrosoftTranslatorLogo: '\uf782',
       MiniExpandMirrored: '\uea5a',
       More: '\ue712',
-      MoreHorizontalRegular : '?',
+      MoreHorizontalRegular : '\ue8e9',
       MoreVertical: '\uf2bc',
       NotePinned: '\ued9a',
-      NoteRegular: '?',
+      NoteRegular: '\ue91b',
       OfficeChat: '\uf70f',
       OpenSource: '\uebc2',
       OpenInNewWindow: '\ue8a7',
@@ -213,7 +220,7 @@ function iconNameDatabase(){
       Phone: '\ue717',
       Photo2: '\ueb9f',
       Pin: '\ue718',
-      PinFilled : '?',
+      PinFilled : '\uea51',
       Pinned: '\ue840',
       PinnedSolid: '\uf676',
       PinRegular : '?',
@@ -237,20 +244,23 @@ function iconNameDatabase(){
       Save: '\ue74e',
       Search: '\ue721',
       Send: '\ue724',
-      SendRegular: '?',
+      SendRegular: '\ueb80',
       Settings: '\ue713',
       Share: '\ue72d',
       ShoppingCart: '?',
       SortDown: '\uee69',
-      StarFilled: '\u2605', // svg: filled star
+      StarFilled: '\u2605',
+      StarRegular: "\uec78",
       StatusCircleCheckmark: '\uf13e',
       Tag: '\ue8ec',
-      TagRegular : '?',
+      TagRegular : '\ued42',
       TagSolid: '\uf70e',
+      ThumbLikeRegular: "\uee92",
       ToDoLogoOutline: '\uf75b',
       Undo: '\ue7a7',
       Up: '\ue74a',
-      Video: '\ue714'
+      Video: '\ue714',
+      WarningRegular: "\uef3e"
   }
 }
 
@@ -817,8 +827,13 @@ function text2image(txt,color,size){
     let canvas = document.createElement('canvas')
     canvas.width = size
     canvas.height = size
+
+    let style = (USE_BOLD_FONT ? 'bold ' : '') + (USE_ITALIC_FONT ? 'italic ' : '') + `${FONTSIZE_TXT2IMAGE}px ${FONTS_TXT2IMAGE}`
+    let fontFamily = "controlIcons, mailIcons, peopleIcons, addinsIcons, surfaceActionIcons, FluentSystemIcons, FluentSystemIconsFilled, FluentSystemIconsRegular, \"Segoe UI Emoji\""
+
     let ctx = canvas.getContext('2d')
-    ctx.font =  (USE_BOLD_FONT ? 'bold ' : '') +  (USE_ITALIC_FONT ? 'italic ' : '') + `${FONTSIZE_TXT2IMAGE}px ${FONTS_TXT2IMAGE}`
+    ctx.font = style  + " " + fontFamily
+
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillStyle = color ?? iconColor_DEFAULT

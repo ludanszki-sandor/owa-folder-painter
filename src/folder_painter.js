@@ -81,7 +81,7 @@ function modify_webpage(){
         let css_red = `div[role="treeitem"] span span span { ${redStyle} }`
         csss = csss.concat(css_red)
     }
-    if (config.enabled.svgModify){
+    if (config.enabled.svgModify){ // csak 2205-től volt érvényes, de 2208-tól már nem kell
         let icosz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
         let css_s = icosz.map(item => {
             let {iconName, iconText} = item
@@ -93,6 +93,21 @@ function modify_webpage(){
             }
         }).join('\n')
         csss = csss.concat(css_s)
+    }
+    if (config.enabled.mod2208){ // 2208-tól érvényes módosítások
+        let icosz = nullifyTransparentIcons(normalizeIcons(compactIcons(config.icons)))
+        let css_2208 = icosz.map(item => {
+            let {iconName, iconText} = item
+            if (iconText == '' || iconText == null){
+                //return `i[data-icon-name="${iconName}"] span i {color:red;}`
+                return ''
+            } else {
+                return `i[data-icon-name="${iconName}"] span i {display:none;}`
+            }
+        }).join('\n')
+        csss = csss.concat(css_2208)
+
+
     }
     if (config.enabled.hover){
         let hoverBGColor =  config.misc.hover.BGColor
@@ -109,12 +124,18 @@ function modify_webpage(){
 }
 
 
-
 function onFinishWeb(){
     debugLog('onFinishWeb')
     if (DEBUG_COLLECT_ICONS){
         // todo... (not perfect yet)
-        let importants = [/*  ide írjuk a mindenképp megjelenítendó data-icon-name értékeket*/]
+        // Meghatározzuk a mindenképp megjelenítendő data-icon-name értékeket
+        let db = iconNameDatabase()
+        let importants = Object.keys(db).map(key =>
+        {
+             return db[key] == "?" ? key : ""
+        } ).filter(value => value !== "")
+        // további elemeket fűzhetünk hozzá...
+        //importants.concat( ['AppsRegular', 'ArrowForwardRegular', 'ArrowReplyAllRegular', 'ArrowUndoRegular', 'AttachRegular'] )
         let data = iconCollector(importants,true)
         let len = data.length
         if (0 < len){
