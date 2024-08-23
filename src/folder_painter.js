@@ -1,5 +1,18 @@
 
 function modify_webpage(){
+
+    // módosult a title, pl:
+    //title="ABAP – 1&nbsp;234 elem (0 olvasatlan)"
+
+    let title_modifier = ''
+    let title_tail = ''
+
+    let title_hack = true // todo: config-ból
+    if(title_hack){
+        title_modifier = '^'
+        title_tail = ' '
+    }
+
     debugLog(['modify_webpage'])
     let csss = Array()
     if (config.enabled.icons){
@@ -26,8 +39,8 @@ function modify_webpage(){
             let bg_color = item.textBGColor ?? TEXT_TRANSPARENT
             let result = Array()
             if (config.enabled.folderColors){
-                let folderColoredStyle = `div[title="${item.folderName}"] i, div[title="${item.folderName}"] span {color:${color};} ` +
-                    `div[title="${item.folderName}"] {color:${color}; background-color:${bg_color};} `
+                let folderColoredStyle = `div[title${title_modifier}="${item.folderName}${title_tail}"] i, div[title${title_modifier}="${item.folderName}${title_tail}"] span {color:${color};} ` +
+                    `div[title${title_modifier}="${item.folderName}${title_tail}"] {color:${color}; background-color:${bg_color};} `
                 result = result.concat(folderColoredStyle)
             }
             if (config.enabled.folderIcons){
@@ -36,7 +49,7 @@ function modify_webpage(){
                 // vagy nincs hozzájuk külön data-icon-name
                 if (item.folderEmoji !== null && item.folderEmoji !== '') {
                     let stx = generateIconStyleX(item.folderEmoji,color,ENABLE_TXT2IMAGE_INLINE,null)
-                    let iconEmojiStyle = ` div[role="treeitem"][title="${folderName}"] div i[data-icon-name="${fabrika}"]:before { ${stx.before} }`
+                    let iconEmojiStyle = ` div[role="treeitem"][title${title_modifier}="${folderName}${title_tail}"] div i[data-icon-name="${fabrika}"]:before { ${stx.before} }`
                     result = result.concat(iconEmojiStyle)
                 }
             }
@@ -114,7 +127,7 @@ function modify_webpage(){
         let colorssz = nullifyTransparentColors(normalizeColors(compactColors(config.colors)))
         let css_h = colorssz.map(item => {
             let folderName = item.folderName
-            return `div[title="${folderName}"]:hover {background-color:${hoverBGColor}!important; font-style:italic;} `
+            return `div[title${title_modifier}="${folderName}${title_tail}"]:hover {background-color:${hoverBGColor}!important; font-style:italic;} `
         }).join('\n')
         csss = csss.concat(css_h)
     }
