@@ -4,6 +4,9 @@ function modify_webpage(){
     // módosult a title, pl:
     //title="ABAP – 1&nbsp;234 elem (0 olvasatlan)"
 
+    // todo #1: almenü - gyári szövegekhez tartozó ikonok, pl. Piszkozatok
+    // todo #2: almenü - alapértelmezett könyvtár ikon
+
     let title_modifier = ''
     let title_tail = ''
 
@@ -25,6 +28,8 @@ function modify_webpage(){
             let newIconColor = iconColor ?? iconColor_DEFAULT
             let st = generateIconStyleX(iconText,newIconColor,ENABLE_TXT2IMAGE_INLINE,iconName)
             return `i[data-icon-name="${iconName}"]:before {${st.before}}  i[data-icon-name="${iconName}"] {${st.element}}`
+
+
         }).join('\n')
         csss = csss.concat(css_b)
     }
@@ -41,6 +46,13 @@ function modify_webpage(){
             if (config.enabled.folderColors){
                 let folderColoredStyle = `div[title${title_modifier}="${item.folderName}${title_tail}"] i, div[title${title_modifier}="${item.folderName}${title_tail}"] span {color:${color};} ` +
                     `div[title${title_modifier}="${item.folderName}${title_tail}"] {color:${color}; background-color:${bg_color};} `
+                    // ez is kell, pl. az "Áthelyezés" almenü miatt:
+                    + `div[title="${item.folderName}"] span {color:${color}; background-color:${bg_color}; padding-left:5px;  } ` // bgcolor nem biztos, hogy kell...
+
+                    let listItemStyle = ` ul div div div[title="${item.folderName}"] div i {color:transparent; visibility:hidden; }`
+                    folderColoredStyle = folderColoredStyle.concat(listItemStyle)
+
+
                 result = result.concat(folderColoredStyle)
             }
             if (config.enabled.folderIcons){
@@ -50,6 +62,8 @@ function modify_webpage(){
                 if (item.folderEmoji !== null && item.folderEmoji !== '') {
                     let stx = generateIconStyleX(item.folderEmoji,color,ENABLE_TXT2IMAGE_INLINE,null)
                     let iconEmojiStyle = ` div[role="treeitem"][title${title_modifier}="${folderName}${title_tail}"] div i[data-icon-name="${fabrika}"]:before { ${stx.before} }`
+                        // ez is kell, pl. az "Áthelyezés" almenü miatt:
+                        + ` ul div div div[title="${item.folderName}"] div i:after { visibility:visible; ${stx.before} }`
                     result = result.concat(iconEmojiStyle)
                 }
             }

@@ -345,9 +345,6 @@ function generateCommonFoldersDatabase(){
         {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'Észlelt elemek', hu: 'Észlelt elemek'}},
         {dataIconName: sz_FABRIC_FOLDER, folderName: {en: 'RSS-előfizetések', hu: 'RSS-előfizetések'}},
 
-
-
-
         {dataIconName: chevro, folderName: {en: 'Favorites', hu: 'Kedvencek'}},
         {dataIconName: chevro, folderName: {en: 'Folders', hu: 'Mappák'}},
         {dataIconName: chevro, folderName: {en: 'Groups', hu: 'Csoportok'}}
